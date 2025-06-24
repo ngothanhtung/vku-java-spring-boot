@@ -30,12 +30,11 @@ public class UserService {
 
     public List<UserDto> getUsers() {
         List<User> users = userRepository.findAllWithRoles();
+
         System.out.println("Fetched users: " + users.size());
 
         return users.stream().map(user -> {
-
             List<RoleDto> roles = user.getUserRoles().stream().map(userRole -> new RoleDto(userRole.getRole().getId(), userRole.getRole().getName())).collect(Collectors.toList());
-
             return new UserDto(user.getId(), user.getName(), user.getEmail(), roles);
         }).collect(Collectors.toList());
     }
