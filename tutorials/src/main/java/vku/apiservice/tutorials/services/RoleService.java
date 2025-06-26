@@ -76,7 +76,12 @@ public class RoleService {
 
     public void removeUsersFromRole(String roleId, List<String> userIds) {
         // Check if a role exists
-        Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
+        // Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
+        Role role = roleRepository.findById(roleId).orElse(null);
+
+        if (role == null) {
+            throw new RuntimeException("Role not found with id: " + roleId);
+        }
 
         // 2. Check if all userIds exist
         List<User> users = userRepository.findAllById(userIds);
