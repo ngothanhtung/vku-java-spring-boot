@@ -27,9 +27,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-
     public List<UserDto> getUsers() {
-        List<User> users = userRepository.findAllWithRoles();
+        List<User> users = userRepository.findAllUsersWithRoles();
 
         System.out.println("Fetched users: " + users.size());
 

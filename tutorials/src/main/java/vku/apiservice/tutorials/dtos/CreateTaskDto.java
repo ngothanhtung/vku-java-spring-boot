@@ -16,9 +16,12 @@ public class CreateTaskDto {
     @NotBlank(message = "Description is required")
     private String description;
 
-    public CreateTaskDto(String title, String description) {
+    @NotBlank(message = "Id of Assignee is required")
+    private String assigneeId;
+
+    public CreateTaskDto(String title, String description, String assigneeId) {
         this.title = title;
         this.description = description;
-
+        this.assigneeId = assigneeId;
     }
 }
