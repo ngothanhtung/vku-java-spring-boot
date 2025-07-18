@@ -1,6 +1,5 @@
 package vku.apiservice.tutorials.dtos;
 
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.Getter;

@@ -21,6 +21,5 @@ public class TaskDto {
     private String status;
     private String priority;
 
-
     private User assignee;
 }

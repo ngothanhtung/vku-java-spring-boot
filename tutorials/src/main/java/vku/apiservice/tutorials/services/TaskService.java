@@ -16,14 +16,12 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
-
-    public TaskService(TaskRepository taskRepository,  UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
-
     }
 
-    public Task createRequest(CreateTaskDto data) {
+    public Task create(CreateTaskDto data) {
         User user = userRepository.findById(data.getAssigneeId()).orElseThrow(() -> new HttpException("User not found with id: " + data.getAssigneeId(), HttpStatus.BAD_REQUEST));
 
         Task task = new Task();
@@ -36,5 +34,9 @@ public class TaskService {
 
     public List<Task> getTasks() {
         return taskRepository.findAll();
+    }
+
+    public Task getTaskById(String id) {
+        return taskRepository.findById(id).orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
     }
 }

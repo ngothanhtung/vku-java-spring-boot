@@ -26,9 +26,6 @@ public class RoleController {
 
     @PatchMapping("/{id}")
     public Role update(@PathVariable("id") String id, @RequestBody @Valid UpdateRoleDto data) {
-        // debug print id and data
-        System.out.println("Updating role with ID: " + id);
-        System.out.println("Update data: " + data);
         return roleService.update(id, data);
     }
 
@@ -39,18 +36,13 @@ public class RoleController {
 
     @PostMapping("/{id}/add-users-to-role")
     public ResponseEntity<String> addUsersToRole(@PathVariable("id") String id, @RequestBody List<String> userIds) {
-
         roleService.addUsersToRole(id, userIds);
-
         return ResponseEntity.ok("Users added to role successfully!");
     }
 
     @PostMapping("/{id}/remove-users-from-role")
-    public ResponseEntity<String> removeUsersFromRole(@PathVariable("id") String id,
-            @RequestBody List<String> userIds) {
-
+    public ResponseEntity<String> removeUsersFromRole(@PathVariable("id") String id, @RequestBody List<String> userIds) {
         roleService.removeUsersFromRole(id, userIds);
-
         return ResponseEntity.ok("Users removed from role successfully!");
     }
 }

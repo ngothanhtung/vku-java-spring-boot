@@ -17,12 +17,17 @@ public class TaskController {
 
     @PostMapping()
     public Task createTask(@RequestBody @Valid CreateTaskDto data) {
-        return taskService.createRequest(data);
+        return taskService.create(data);
     }
 
     @GetMapping()
     public Iterable<Task> getTasks() {
         return taskService.getTasks();
+    }
+
+    @GetMapping("/{id}")
+    public Task getTaskById(@PathVariable("id") String id) {
+        return taskService.getTaskById(id);
     }
 
 }
