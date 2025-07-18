@@ -1,7 +1,7 @@
 package vku.apiservice.tutorials.services;
 
 import vku.apiservice.tutorials.dtos.CreateRoleDto;
-import vku.apiservice.tutorials.dtos.RoleDto;
+import vku.apiservice.tutorials.dtos.UpdateRoleDto;
 import vku.apiservice.tutorials.entities.Role;
 import vku.apiservice.tutorials.entities.User;
 import vku.apiservice.tutorials.entities.UserRole;
@@ -25,26 +25,57 @@ public class RoleService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
 
-    public RoleService(RoleRepository roleRepository, UserRepository userRepository, UserRoleRepository userRoleRepository) {
+    public RoleService(RoleRepository roleRepository, UserRepository userRepository,
+            UserRoleRepository userRoleRepository) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
     }
 
-    public Role createRequest(CreateRoleDto data) {
+    public Role create(CreateRoleDto data) {
         Role role = new Role();
+        role.setCode(data.getCode());
         role.setName(data.getName());
+        role.setDescription(data.getDescription());
 
         return this.roleRepository.save(role);
     }
 
-    public List<Role> getRoles() {
-       return roleRepository.findAll();
+    public Role update(String id, UpdateRoleDto role) {
+        Role existingRole = roleRepository.findById(id)
+                .orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
+
+        // Validate that at least one field is provided
+        if (!role.hasAnyField()) {
+            throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
+        }
+
+        // Only update fields that are present in the request
+        if (role.getCode() != null) {
+            existingRole.setCode(role.getCode());
+        }
+        if (role.getName() != null) {
+            existingRole.setName(role.getName());
+        }
+        if (role.getDescription() != null) {
+            existingRole.setDescription(role.getDescription());
+        }
+
+        return this.roleRepository.save(existingRole);
     }
 
+    public Role findById(String id) {
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
+    }
+
+    public List<Role> getRoles() {
+        return roleRepository.findAll();
+    }
 
     public void addUsersToRole(String roleId, List<String> userIds) {
-        Role role = roleRepository.findById(roleId).orElseThrow(() -> new HttpException("Role not found with id: " + roleId, HttpStatus.BAD_REQUEST));
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new HttpException("Role not found with id: " + roleId, HttpStatus.BAD_REQUEST));
 
         // 2. Check if all userIds exist
         List<User> users = userRepository.findAllById(userIds);
@@ -71,13 +102,15 @@ public class RoleService {
         } catch (DataIntegrityViolationException e) {
             throw new HttpException("Database constraint violation: " + e.getMessage(), HttpStatus.CONFLICT);
         } catch (HttpException e) {
-            throw new HttpException("Failed to assign users to role: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException("Failed to assign users to role: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     public void removeUsersFromRole(String roleId, List<String> userIds) {
         // Check if a role exists
-        // Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
+        // Role role = roleRepository.findById(roleId).orElseThrow(() -> new
+        // RuntimeException("Role not found with id: " + roleId));
         Role role = roleRepository.findById(roleId).orElse(null);
 
         if (role == null) {
