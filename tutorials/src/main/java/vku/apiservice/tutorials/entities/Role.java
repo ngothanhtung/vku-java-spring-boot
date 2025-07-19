@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity()
 @Table(name = "roles")
-public class Role {
+public class Role extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import vku.apiservice.tutorials.entities.User;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -22,4 +23,10 @@ public class TaskDto {
     private String priority;
 
     private User assignee;
+
+    // Audit fields
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
 }

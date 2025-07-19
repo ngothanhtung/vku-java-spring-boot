@@ -55,6 +55,12 @@ public class TaskService {
         dto.setPriority(task.getPriority());
         dto.setAssignee(task.getAssignee());
 
+        // Map audit fields
+        dto.setCreatedAt(task.getCreatedAt());
+        dto.setUpdatedAt(task.getUpdatedAt());
+        dto.setCreatedBy(task.getCreatedBy());
+        dto.setUpdatedBy(task.getUpdatedBy());
+
         return dto;
     }
 

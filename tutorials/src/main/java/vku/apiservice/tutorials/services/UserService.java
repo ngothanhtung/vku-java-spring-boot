@@ -4,7 +4,9 @@ import vku.apiservice.tutorials.dtos.CreateUserDto;
 import vku.apiservice.tutorials.dtos.RoleDto;
 import vku.apiservice.tutorials.dtos.UserDto;
 import vku.apiservice.tutorials.entities.User;
+import vku.apiservice.tutorials.exceptions.HttpException;
 import vku.apiservice.tutorials.repositories.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +21,11 @@ public class UserService {
     }
 
     public User createUser(CreateUserDto data) {
+        // Check if email already exists
+        if (userRepository.existsByEmail(data.getEmail())) {
+            throw new HttpException("Email already exists: " + data.getEmail(), HttpStatus.CONFLICT);
+        }
+
         User user = new User();
         user.setName(data.getName());
         user.setEmail(data.getEmail());

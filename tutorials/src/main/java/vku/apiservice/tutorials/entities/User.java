@@ -15,12 +15,15 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     private String name;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
     // Exclude password from JSON serialization
     @JsonIgnore
     private String password;
