@@ -1,7 +1,13 @@
 package vku.apiservice.tutorials.controllers;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
 import vku.apiservice.tutorials.dtos.CreateTaskDto;
 import vku.apiservice.tutorials.dtos.TaskDto;
 import vku.apiservice.tutorials.entities.Task;
@@ -17,8 +23,9 @@ public class TaskController {
     }
 
     @PostMapping()
-    public Task create(@RequestBody @Valid CreateTaskDto data) {
-        return taskService.create(data);
+    public TaskDto create(@RequestBody @Valid CreateTaskDto data) {
+        Task task = taskService.create(data);
+        return taskService.convertToDto(task);
     }
 
     @GetMapping()

@@ -1,11 +1,10 @@
 package vku.apiservice.tutorials.dtos;
 
-import lombok.Getter;
-import lombok.Setter;
-import vku.apiservice.tutorials.entities.User;
-
 import java.time.LocalDateTime;
 import java.util.Date;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -22,7 +21,7 @@ public class TaskDto {
     private String status;
     private String priority;
 
-    private User assignee;
+    private AssigneeDto assignee;
 
     // Audit fields
     private LocalDateTime createdAt;

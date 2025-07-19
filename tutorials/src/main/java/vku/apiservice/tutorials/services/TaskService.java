@@ -1,15 +1,18 @@
 package vku.apiservice.tutorials.services;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import vku.apiservice.tutorials.dtos.AssigneeDto;
 import vku.apiservice.tutorials.dtos.CreateTaskDto;
 import vku.apiservice.tutorials.dtos.TaskDto;
-import vku.apiservice.tutorials.entities.*;
+import vku.apiservice.tutorials.entities.Task;
+import vku.apiservice.tutorials.entities.User;
 import vku.apiservice.tutorials.exceptions.HttpException;
 import vku.apiservice.tutorials.repositories.TaskRepository;
 import vku.apiservice.tutorials.repositories.UserRepository;
-
-import java.util.List;
 
 @Service
 public class TaskService {
@@ -22,7 +25,8 @@ public class TaskService {
     }
 
     public Task create(CreateTaskDto data) {
-        User user = userRepository.findById(data.getAssigneeId()).orElseThrow(() -> new HttpException("User not found with id: " + data.getAssigneeId(), HttpStatus.BAD_REQUEST));
+        User user = userRepository.findById(data.getAssigneeId()).orElseThrow(
+                () -> new HttpException("User not found with id: " + data.getAssigneeId(), HttpStatus.BAD_REQUEST));
 
         Task task = new Task();
         task.setTitle(data.getTitle());
@@ -40,7 +44,8 @@ public class TaskService {
     }
 
     public Task getTaskById(String id) {
-        return taskRepository.findById(id).orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
+        return taskRepository.findById(id)
+                .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
     }
 
     public TaskDto convertToDto(Task task) {
@@ -53,7 +58,15 @@ public class TaskService {
         dto.setCompletedDate(task.getCompletedDate());
         dto.setStatus(task.getStatus());
         dto.setPriority(task.getPriority());
-        dto.setAssignee(task.getAssignee());
+
+        // Convert User to AssigneeDto to exclude audit fields
+        if (task.getAssignee() != null) {
+            User assignee = task.getAssignee();
+            dto.setAssignee(new AssigneeDto(
+                    assignee.getId(),
+                    assignee.getName(),
+                    assignee.getEmail()));
+        }
 
         // Map audit fields
         dto.setCreatedAt(task.getCreatedAt());
@@ -92,7 +105,8 @@ public class TaskService {
         }
         if (data.getAssigneeId() != null) {
             User user = userRepository.findById(data.getAssigneeId())
-                    .orElseThrow(() -> new HttpException("User not found with id: " + data.getAssigneeId(), HttpStatus.BAD_REQUEST));
+                    .orElseThrow(() -> new HttpException("User not found with id: " + data.getAssigneeId(),
+                            HttpStatus.BAD_REQUEST));
             existingTask.setAssignee(user);
         }
 
