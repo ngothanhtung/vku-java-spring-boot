@@ -248,7 +248,7 @@ public class TaskService {
     }
 
     /**
-     * Check if the given user is the owner/assignee of tasks
+     * Check if the given user is the owner/assignee of tasks by assignee ID
      * Used for RBAC authorization
      */
     public boolean isTaskOwner(String assigneeId, String currentUserEmail) {
@@ -259,5 +259,25 @@ public class TaskService {
 
         // Check if the current user is the assignee
         return currentUser.get().getId().equals(assigneeId);
+    }
+
+    /**
+     * Check if the given user is the owner/assignee of a specific task by task ID
+     * Used for RBAC authorization
+     */
+    public boolean isTaskOwnerById(String taskId, String currentUserEmail) {
+        Optional<User> currentUser = userRepository.findByEmail(currentUserEmail);
+        if (!currentUser.isPresent()) {
+            return false;
+        }
+
+        Optional<Task> task = taskRepository.findById(taskId);
+        if (!task.isPresent()) {
+            return false;
+        }
+
+        // Check if the current user is the assignee of this task
+        return task.get().getAssignee() != null &&
+                task.get().getAssignee().getId().equals(currentUser.get().getId());
     }
 }

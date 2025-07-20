@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import vku.apiservice.tutorials.config.PreAuthorizeUtil;
 import vku.apiservice.tutorials.dtos.CreateProjectDto;
 import vku.apiservice.tutorials.dtos.ProjectDto;
 import vku.apiservice.tutorials.dtos.UpdateProjectDto;
@@ -24,6 +26,7 @@ import vku.apiservice.tutorials.services.ProjectService;
 
 @RestController
 @RequestMapping("/api/projects")
+@PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER)
 public class ProjectController {
   private final ProjectService projectService;
 

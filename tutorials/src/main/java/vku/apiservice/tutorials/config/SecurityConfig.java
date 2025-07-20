@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // Enable method-level security
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -36,17 +36,18 @@ public class SecurityConfig {
             .requestMatchers("/api/auth/**").permitAll()
 
             // Admin-only endpoints
-            .requestMatchers("/api/users/**").hasRole("ADMINISTRATORS")
-            .requestMatchers("/api/roles/**").hasRole("ADMINISTRATORS")
+            .requestMatchers("/api/users/**").hasRole(RoleConstants.ADMIN)
+            .requestMatchers("/api/roles/**").hasRole(RoleConstants.ADMIN)
 
             // Project management - Admin and Manager can manage, Users can view
-            .requestMatchers(HttpMethod.POST, "/api/projects/**").hasAnyRole("ADMINISTRATORS", "MANAGERS")
-            .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasAnyRole("ADMINISTRATORS", "MANAGERS")
-            .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasAnyRole("ADMINISTRATORS", "MANAGERS")
-            .requestMatchers(HttpMethod.GET, "/api/projects/**").hasAnyRole("MANAGERS", "USERS")
+            .requestMatchers(HttpMethod.POST, "/api/projects/**").hasAnyRole(RoleConstants.ADMIN, RoleConstants.MANAGER)
+            .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasAnyRole(RoleConstants.ADMIN, RoleConstants.MANAGER)
+            .requestMatchers(HttpMethod.DELETE, "/api/projects/**")
+            .hasAnyRole(RoleConstants.ADMIN, RoleConstants.MANAGER)
+            .requestMatchers(HttpMethod.GET, "/api/projects/**").hasAnyRole(RoleConstants.MANAGER, RoleConstants.USER)
 
             // Task management - All authenticated users can access tasks
-            .requestMatchers("/api/tasks/**").hasAnyRole("ADMINISTRATORS", "MANAGERS", "USERS")
+            .requestMatchers("/api/tasks/**").hasAnyRole(RoleConstants.ADMIN, RoleConstants.MANAGER, RoleConstants.USER)
 
             // Any other request requires authentication
             .anyRequest().authenticated())
