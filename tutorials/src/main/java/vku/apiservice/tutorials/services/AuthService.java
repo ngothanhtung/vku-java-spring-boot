@@ -40,35 +40,12 @@ public class AuthService {
         .orElseThrow(
             () -> new HttpException("User not found with email: " + loginRequest.getUsername(), HttpStatus.NOT_FOUND));
 
-    // Verify password (plain text comparison)
+    // Verify password
     if (!loginRequest.getPassword().equals(user.getPassword())) {
       throw new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED);
     }
 
-    // Get roles of the user
-    List<RoleDto> roles = user.getUserRoles().stream()
-        .map(userRole -> new RoleDto(userRole.getRole().getId(), userRole.getRole().getName()))
-        .collect(Collectors.toList());
-
-    // Create UserDto for response
-    UserDto userDto = new UserDto();
-    userDto.setId(user.getId());
-    userDto.setName(user.getName());
-    userDto.setEmail(user.getEmail());
-    userDto.setRoles(roles);
-
-    // Generate access token and refresh token
-    String accessToken = jwtService.generateAccessToken(user);
-    String refreshToken = jwtService.generateRefreshToken(user);
-
-    // Create and return response
-    return new AuthResponseDto(
-        userDto,
-        accessToken,
-        refreshToken,
-        jwtExpiration / 1000, // Convert to seconds
-        refreshExpiration / 1000 // Convert to seconds
-    );
+    return generateAuthResponse(user);
   }
 
   public AuthResponseDto refreshToken(RefreshTokenDto refreshRequest) {
@@ -78,39 +55,19 @@ public class AuthService {
       // Extract username from refresh token
       String username = jwtService.extractUsername(refreshToken);
 
-      // Find user
-      User user = userService.findByEmail(username)
-          .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
-
-      // Validate refresh token
+      // Validate refresh token first
       if (!jwtService.isRefreshTokenValid(refreshToken, username)) {
         throw new HttpException("Invalid or expired refresh token", HttpStatus.UNAUTHORIZED);
       }
 
-      // Get user roles
-      List<RoleDto> roles = user.getUserRoles().stream()
-          .map(userRole -> new RoleDto(userRole.getRole().getId(), userRole.getRole().getName()))
-          .collect(Collectors.toList());
+      // Find user by email (refresh token only contains minimal data)
+      User user = userService.findByEmail(username)
+          .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
 
-      // Create UserDto for response
-      UserDto userDto = new UserDto();
-      userDto.setId(user.getId());
-      userDto.setName(user.getName());
-      userDto.setEmail(user.getEmail());
-      userDto.setRoles(roles);
+      log.info("Access token refreshed for user: {}", username);
 
-      // Generate new access token and refresh token
-      String newAccessToken = jwtService.generateAccessToken(user);
-      String newRefreshToken = jwtService.generateRefreshToken(user);
-
-      log.info("Token refreshed for user: {}", username);
-
-      return new AuthResponseDto(
-          userDto,
-          newAccessToken,
-          newRefreshToken,
-          jwtExpiration / 1000,
-          refreshExpiration / 1000);
+      // Generate new tokens with fresh user data from database
+      return generateAuthResponse(user);
 
     } catch (Exception e) {
       log.error("Token refresh failed: {}", e.getMessage());
@@ -118,19 +75,47 @@ public class AuthService {
     }
   }
 
+  /**
+   * Helper method to generate AuthResponse with fresh user data
+   */
+  private AuthResponseDto generateAuthResponse(User user) {
+    // Get fresh user roles from database
+    List<RoleDto> roles = user.getUserRoles().stream()
+        .map(userRole -> new RoleDto(userRole.getRole().getId(), userRole.getRole().getName()))
+        .collect(Collectors.toList());
+
+    // Create UserDto with fresh data
+    UserDto userDto = new UserDto();
+    userDto.setId(user.getId());
+    userDto.setName(user.getName());
+    userDto.setEmail(user.getEmail());
+    userDto.setRoles(roles);
+
+    // Generate new access token (with full data + roles)
+    String accessToken = jwtService.generateAccessToken(user);
+
+    // Generate new refresh token (with minimal data only)
+    String refreshToken = jwtService.generateRefreshToken(user);
+
+    return new AuthResponseDto(
+        userDto,
+        accessToken,
+        refreshToken,
+        jwtExpiration / 1000,
+        refreshExpiration / 1000);
+  }
+
   public void logout(String token) {
     try {
-      // Extract username from token for logging
       String username = jwtService.extractUsername(token);
       log.info("User logged out: {}", username);
 
-      // In a production environment, you might want to:
-      // 1. Add the token to a blacklist (using Redis or similar)
-      // 2. Store logout timestamp in database
-      // 3. Invalidate refresh tokens associated with this user
+      // Production considerations:
+      // 1. Add access token to blacklist
+      // 2. Invalidate associated refresh tokens
+      // 3. Store logout timestamp
 
     } catch (Exception e) {
-      // Handle invalid token during logout gracefully
       log.warn("Logout attempted with invalid token: {}", e.getMessage());
     }
   }

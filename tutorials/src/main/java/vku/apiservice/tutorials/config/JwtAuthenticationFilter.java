@@ -29,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NonNull HttpServletRequest request,
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain) throws ServletException, IOException {
+
     final String authHeader = request.getHeader("Authorization");
     final String jwt;
     final String userEmail;
@@ -39,7 +40,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     jwt = authHeader.substring(7);
-    userEmail = jwtService.extractUsername(jwt);
+
+    try {
+      // Check if it's a refresh token being used for API access (should be rejected)
+      String tokenType = jwtService.extractTokenType(jwt);
+      if ("refresh".equals(tokenType)) {
+        // Refresh token used for API access - reject
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"Refresh token cannot be used for API access\"}");
+        return;
+      }
+
+      userEmail = jwtService.extractUsername(jwt);
+    } catch (Exception e) {
+      filterChain.doFilter(request, response);
+      return;
+    }
 
     if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
