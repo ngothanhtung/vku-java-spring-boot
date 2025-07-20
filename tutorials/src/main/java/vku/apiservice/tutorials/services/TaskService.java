@@ -35,8 +35,15 @@ public class TaskService {
         Task task = new Task();
         task.setTitle(data.getTitle());
         task.setDescription(data.getDescription());
-        task.setStatus(data.getStatus());
-        task.setPriority(data.getPriority());
+
+        // Convert String to enum with defaults if null/empty
+        if (data.getStatus() != null && !data.getStatus().trim().isEmpty()) {
+            task.setStatus(TaskStatus.fromString(data.getStatus()));
+        }
+        if (data.getPriority() != null && !data.getPriority().trim().isEmpty()) {
+            task.setPriority(TaskPriority.fromString(data.getPriority()));
+        }
+
         task.setAssignee(user);
 
         return this.taskRepository.save(task); // @PrePersist will set defaults if needed
@@ -131,11 +138,11 @@ public class TaskService {
         if (data.getDescription() != null) {
             existingTask.setDescription(data.getDescription());
         }
-        if (data.getStatus() != null) {
-            existingTask.setStatus(data.getStatus());
+        if (data.getStatus() != null && !data.getStatus().trim().isEmpty()) {
+            existingTask.setStatus(TaskStatus.fromString(data.getStatus()));
         }
-        if (data.getPriority() != null) {
-            existingTask.setPriority(data.getPriority());
+        if (data.getPriority() != null && !data.getPriority().trim().isEmpty()) {
+            existingTask.setPriority(TaskPriority.fromString(data.getPriority()));
         }
         if (data.getAssigneeId() != null) {
             User user = userRepository.findById(data.getAssigneeId())
@@ -171,12 +178,12 @@ public class TaskService {
 
         // Update status if provided and valid
         if (data.hasValidStatus()) {
-            existingTask.setStatus(data.getStatus());
+            existingTask.setStatus(TaskStatus.fromString(data.getStatus()));
         }
 
         // Update priority if provided and valid
         if (data.hasValidPriority()) {
-            existingTask.setPriority(data.getPriority());
+            existingTask.setPriority(TaskPriority.fromString(data.getPriority()));
         }
 
         // Update assignee if provided and valid

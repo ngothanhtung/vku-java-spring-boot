@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import vku.apiservice.tutorials.enums.TaskPriority;
-import vku.apiservice.tutorials.enums.TaskStatus;
+import vku.apiservice.tutorials.validation.ValidTaskPriority;
+import vku.apiservice.tutorials.validation.ValidTaskStatus;
 
 @Data
 @NoArgsConstructor
@@ -17,9 +17,11 @@ public class CreateTaskDto {
     @NotBlank(message = "Description is required")
     private String description;
 
-    private TaskStatus status; // Will be handled in service with default
+    @ValidTaskStatus
+    private String status; // Optional, will be handled in service with default
 
-    private TaskPriority priority; // Will be handled in service with default
+    @ValidTaskPriority
+    private String priority; // Optional, will be handled in service with default
 
     @NotBlank(message = "Id of Assignee is required")
     private String assigneeId;

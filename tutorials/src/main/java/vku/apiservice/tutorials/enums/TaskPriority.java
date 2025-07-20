@@ -1,13 +1,8 @@
 package vku.apiservice.tutorials.enums;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
-import vku.apiservice.tutorials.config.TaskPriorityDeserializer;
-
 /**
  * Enum representing the possible priorities of a task
  */
-@JsonDeserialize(using = TaskPriorityDeserializer.class)
 public enum TaskPriority {
   LOW("Low"), MEDIUM("Medium"), HIGH("High"), URGENT("Urgent");
 

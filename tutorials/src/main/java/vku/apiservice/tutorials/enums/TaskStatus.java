@@ -1,13 +1,8 @@
 package vku.apiservice.tutorials.enums;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
-import vku.apiservice.tutorials.config.TaskStatusDeserializer;
-
 /**
  * Enum representing the possible statuses of a task
  */
-@JsonDeserialize(using = TaskStatusDeserializer.class)
 public enum TaskStatus {
   TO_DO("To Do"), IN_PROGRESS("In Progress"), DONE("Done");
 

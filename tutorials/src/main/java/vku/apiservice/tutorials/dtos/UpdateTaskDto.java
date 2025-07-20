@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import vku.apiservice.tutorials.enums.TaskPriority;
-import vku.apiservice.tutorials.enums.TaskStatus;
+import vku.apiservice.tutorials.validation.ValidTaskPriority;
+import vku.apiservice.tutorials.validation.ValidTaskStatus;
 
 /**
  * DTO for updating task information.
@@ -24,9 +24,11 @@ public class UpdateTaskDto {
     @Size(min = 5, max = 1000, message = "Description must be between 5 and 1000 characters")
     private String description;
 
-    private TaskStatus status;
+    @ValidTaskStatus
+    private String status;
 
-    private TaskPriority priority;
+    @ValidTaskPriority
+    private String priority;
 
     private String assigneeId;
 
@@ -53,11 +55,11 @@ public class UpdateTaskDto {
     }
 
     public boolean hasValidStatus() {
-        return status != null;
+        return status != null && !status.trim().isEmpty();
     }
 
     public boolean hasValidPriority() {
-        return priority != null;
+        return priority != null && !priority.trim().isEmpty();
     }
 
     public boolean hasValidAssigneeId() {
