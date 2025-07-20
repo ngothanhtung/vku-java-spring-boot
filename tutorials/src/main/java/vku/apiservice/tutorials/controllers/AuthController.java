@@ -29,6 +29,6 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<AuthResponseDto> login(@RequestBody @Valid LoginDto data) {
     AuthResponseDto response = authService.login(data);
-    return ResponseEntity.status(201).body(response);
+    return ResponseEntity.status(200).body(response);
   }
 }
