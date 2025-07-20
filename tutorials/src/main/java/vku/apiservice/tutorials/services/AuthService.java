@@ -27,7 +27,8 @@ public class AuthService {
   public AuthResponseDto login(LoginDto loginRequest) {
     // Find user by email (username)
     User user = userService.findByEmail(loginRequest.getUsername())
-        .orElseThrow(() -> new HttpException("User not found with email: " + loginRequest.getUsername(), HttpStatus.NOT_FOUND));
+        .orElseThrow(
+            () -> new HttpException("User not found with email: " + loginRequest.getUsername(), HttpStatus.NOT_FOUND));
 
     // Verify password (plain text comparison)
     if (!loginRequest.getPassword().equals(user.getPassword())) {
@@ -54,8 +55,35 @@ public class AuthService {
         .build();
   }
 
+  public void logout(String token) {
+    // For JWT-based authentication, logout can be implemented in different ways:
+    // 1. Client-side: Simply remove the token from client storage (simplest)
+    // 2. Server-side: Add token to blacklist (more secure but requires storage)
+
+    // For now, we'll implement a simple server-side acknowledgment
+    // The actual token invalidation should be handled on the client-side
+    // by removing the token from localStorage/sessionStorage
+
+    // Optional: Log the logout event
+    if (token != null) {
+      try {
+        String userEmail = jwtService.extractUsername(token);
+        System.out.println("User logged out: " + userEmail);
+      } catch (Exception e) {
+        // Token might be invalid, but that's ok for logout
+        System.out.println("Logout attempt with invalid/expired token");
+      }
+    }
+
+    // In a production environment, you might want to:
+    // 1. Add token to a blacklist/cache (Redis)
+    // 2. Log the logout event to audit logs
+    // 3. Clear any server-side session data if applicable
+  }
+
   private UserDto convertUserToDto(User user) {
-    // For now, we'll create a simple conversion. Later we can use the UserService method
+    // For now, we'll create a simple conversion. Later we can use the UserService
+    // method
     return UserDto.builder()
         .id(user.getId())
         .name(user.getName())
