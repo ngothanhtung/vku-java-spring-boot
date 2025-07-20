@@ -1,8 +1,10 @@
 package vku.apiservice.tutorials.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import vku.apiservice.tutorials.dtos.CreateTaskDto;
 import vku.apiservice.tutorials.dtos.TaskDto;
+import vku.apiservice.tutorials.dtos.UpdateTaskDto;
 import vku.apiservice.tutorials.entities.Task;
 import vku.apiservice.tutorials.services.TaskService;
 
@@ -22,9 +25,21 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @PostMapping()
-    public TaskDto create(@RequestBody @Valid CreateTaskDto data) {
+    @PostMapping
+    public TaskDto createTask(@RequestBody @Valid CreateTaskDto data) {
         Task task = taskService.create(data);
+        return taskService.convertToDto(task);
+    }
+
+    @PutMapping("/{id}")
+    public TaskDto updateTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskDto data) {
+        Task task = taskService.updateTask(id, data);
+        return taskService.convertToDto(task);
+    }
+
+    @PatchMapping("/{id}")
+    public TaskDto patchTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskDto data) {
+        Task task = taskService.updateTask(id, data);
         return taskService.convertToDto(task);
     }
 
@@ -39,4 +54,8 @@ public class TaskController {
         return taskService.convertToDto(task);
     }
 
+    @GetMapping("/assignee/{assigneeId}")
+    public Iterable<TaskDto> getTasksByAssignee(@PathVariable("assigneeId") String assigneeId) {
+        return taskService.getTasksByAssignee(assigneeId);
+    }
 }

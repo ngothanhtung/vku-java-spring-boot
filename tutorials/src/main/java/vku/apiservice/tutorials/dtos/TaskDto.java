@@ -5,6 +5,8 @@ import java.util.Date;
 
 import lombok.Getter;
 import lombok.Setter;
+import vku.apiservice.tutorials.enums.TaskPriority;
+import vku.apiservice.tutorials.enums.TaskStatus;
 
 @Getter
 @Setter
@@ -18,8 +20,8 @@ public class TaskDto {
 
     private Date completedDate;
 
-    private String status;
-    private String priority;
+    private TaskStatus status;
+    private TaskPriority priority;
 
     private AssigneeDto assignee;
 

@@ -1,11 +1,24 @@
 package vku.apiservice.tutorials.entities;
 
-import jakarta.persistence.*;
+import java.util.Date;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Date;
+import vku.apiservice.tutorials.enums.TaskPriority;
+import vku.apiservice.tutorials.enums.TaskStatus;
 
 @Getter
 @Setter
@@ -24,11 +37,13 @@ public class Task extends BaseEntity {
 
     private Date completedDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String status;
+    private TaskStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String priority;
+    private TaskPriority priority;
 
     // Many Tasks can be assigned to one User
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,11 +52,11 @@ public class Task extends BaseEntity {
 
     @PrePersist
     public void prePersist() {
-        if (this.status == null || this.status.trim().isEmpty()) {
-            this.status = "TO_DO";
+        if (this.status == null) {
+            this.status = TaskStatus.TO_DO;
         }
-        if (this.priority == null || this.priority.trim().isEmpty()) {
-            this.priority = "MEDIUM";
+        if (this.priority == null) {
+            this.priority = TaskPriority.MEDIUM;
         }
     }
 }
