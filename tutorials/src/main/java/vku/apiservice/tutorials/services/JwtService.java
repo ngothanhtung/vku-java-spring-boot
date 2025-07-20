@@ -5,9 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -16,6 +19,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import vku.apiservice.tutorials.config.JwtConfigProperties;
 import vku.apiservice.tutorials.dtos.RoleDto;
+import vku.apiservice.tutorials.entities.User;
 
 /**
  * Service for JWT token operations
@@ -25,6 +29,15 @@ import vku.apiservice.tutorials.dtos.RoleDto;
 public class JwtService {
 
   private final JwtConfigProperties jwtConfig;
+
+  @Value("${application.security.jwt.secret-key}")
+  private String secretKey;
+
+  @Value("${application.security.jwt.expiration}")
+  private long jwtExpiration;
+
+  @Value("${application.security.jwt.refresh-token.expiration}")
+  private long refreshExpiration;
 
   private SecretKey getSigningKey() {
     return Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes());
@@ -84,9 +97,52 @@ public class JwtService {
     return (extractedUsername.equals(username) && !isTokenExpired(token));
   }
 
-  public Boolean isTokenValid(String token, org.springframework.security.core.userdetails.UserDetails userDetails) {
+  public String generateAccessToken(User user) {
+    return generateToken(new HashMap<>(), user, jwtExpiration);
+  }
+
+  public String generateRefreshToken(User user) {
+    return generateToken(new HashMap<>(), user, refreshExpiration);
+  }
+
+  private String generateToken(Map<String, Object> extraClaims, User user, long expiration) {
+    Date now = new Date();
+    Date expiryDate = new Date(now.getTime() + expiration);
+
+    // Add user roles to claims
+    List<Map<String, Object>> roles = user.getUserRoles().stream()
+        .map(userRole -> {
+          Map<String, Object> roleMap = new HashMap<>();
+          roleMap.put("id", userRole.getRole().getId());
+          roleMap.put("name", userRole.getRole().getName());
+          return roleMap;
+        })
+        .collect(Collectors.toList());
+
+    extraClaims.put("roles", roles);
+    extraClaims.put("userId", user.getId());
+
+    return Jwts.builder()
+        .claims(extraClaims)
+        .subject(user.getEmail())
+        .issuedAt(now)
+        .expiration(expiryDate)
+        .signWith(getSigningKey(), Jwts.SIG.HS256)
+        .compact();
+  }
+
+  public boolean isTokenValid(String token, UserDetails userDetails) {
     final String username = extractUsername(token);
-    return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+  }
+
+  public boolean isRefreshTokenValid(String refreshToken, String username) {
+    try {
+      final String tokenUsername = extractUsername(refreshToken);
+      return (tokenUsername.equals(username)) && !isTokenExpired(refreshToken);
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   public long getJwtExpirationInSeconds() {

@@ -12,11 +12,12 @@ import jakarta.validation.Valid;
 import vku.apiservice.tutorials.config.PreAuthorizeUtil;
 import vku.apiservice.tutorials.dtos.AuthResponseDto;
 import vku.apiservice.tutorials.dtos.LoginDto;
+import vku.apiservice.tutorials.dtos.RefreshTokenDto;
 import vku.apiservice.tutorials.services.AuthService;
 
 /**
  * Controller for handling authentication operations
- * Updated with hot reload functionality
+ * Updated with refresh token functionality
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -35,19 +36,20 @@ public class AuthController {
     return ResponseEntity.status(200).body(response);
   }
 
+  // Endpoint for refreshing access token
+  @PostMapping("/refresh")
+  public ResponseEntity<AuthResponseDto> refreshToken(@RequestBody @Valid RefreshTokenDto data) {
+    AuthResponseDto response = authService.refreshToken(data);
+    return ResponseEntity.ok(response);
+  }
+
   // Endpoint for user logout
   @PostMapping("/logout")
   @PreAuthorize(PreAuthorizeUtil.ALL_AUTHENTICATED)
-  public ResponseEntity<?> logout(HttpServletRequest request) {
+  public ResponseEntity<String> logout(HttpServletRequest request) {
     String token = extractTokenFromRequest(request);
     authService.logout(token);
-
-    return ResponseEntity.ok().body(new java.util.HashMap<String, Object>() {
-      {
-        put("status", 200);
-        put("message", "Logout successful");
-      }
-    });
+    return ResponseEntity.ok("Logged out successfully");
   }
 
   private String extractTokenFromRequest(HttpServletRequest request) {

@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class AuthResponseDto {
   private UserDto loggedInUser;
   private String accessToken;
-
+  private String refreshToken; // Added refresh token
   private long expiresIn; // Token expiration time in seconds
+  private long refreshExpiresIn; // Added refresh token expiration
 }
