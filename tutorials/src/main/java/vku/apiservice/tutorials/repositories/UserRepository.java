@@ -1,6 +1,7 @@
 package vku.apiservice.tutorials.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,5 +21,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByEmail(String email);
 
     // Find user by email
-    User findByEmail(String email);
+    Optional<User> findByEmail(String email);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.userRoles ur JOIN FETCH ur.role WHERE u.email = :email")
+    Optional<User> findByEmailWithRoles(String email);
 }

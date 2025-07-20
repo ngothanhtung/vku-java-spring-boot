@@ -1,11 +1,13 @@
 package vku.apiservice.tutorials.services;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import vku.apiservice.tutorials.dtos.CreateUserDto;
 import vku.apiservice.tutorials.dtos.RoleDto;
 import vku.apiservice.tutorials.dtos.UserDto;
@@ -14,12 +16,9 @@ import vku.apiservice.tutorials.exceptions.HttpException;
 import vku.apiservice.tutorials.repositories.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public User createUser(CreateUserDto data) {
         // Check if email already exists
@@ -30,7 +29,7 @@ public class UserService {
         User user = new User();
         user.setName(data.getName());
         user.setEmail(data.getEmail());
-        user.setPassword(data.getPassword());
+        user.setPassword(data.getPassword()); // Store password as plain text
 
         return userRepository.save(user);
     }
@@ -39,6 +38,17 @@ public class UserService {
         List<User> users = userRepository.findAllUsersWithRoles();
 
         return users.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public Optional<UserDto> findByEmailWithRoles(String email) {
+        User user = userRepository.findByEmailWithRoles(email)
+                .orElseThrow(() -> new HttpException("User not found with email: " + email, HttpStatus.NOT_FOUND));
+        // return user with roles relationships
+        return Optional.of(convertToDto(user));
     }
 
     /**
