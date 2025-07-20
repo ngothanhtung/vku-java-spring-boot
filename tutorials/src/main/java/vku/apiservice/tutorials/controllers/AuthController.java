@@ -8,11 +8,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vku.apiservice.tutorials.dtos.AuthResponseDto;
-import vku.apiservice.tutorials.dtos.LoginRequestDto;
+import vku.apiservice.tutorials.dtos.LoginDto;
 import vku.apiservice.tutorials.services.AuthService;
 
 /**
  * Controller for handling authentication operations
+ * Updated with hot reload functionality
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -24,9 +25,10 @@ public class AuthController {
     this.authService = authService;
   }
 
+  // Endpoint for user login
   @PostMapping("/login")
-  public ResponseEntity<AuthResponseDto> login(@RequestBody @Valid LoginRequestDto loginRequest) {
-    AuthResponseDto response = authService.login(loginRequest);
-    return ResponseEntity.ok(response);
+  public ResponseEntity<AuthResponseDto> login(@RequestBody @Valid LoginDto data) {
+    AuthResponseDto response = authService.login(data);
+    return ResponseEntity.status(201).body(response);
   }
 }

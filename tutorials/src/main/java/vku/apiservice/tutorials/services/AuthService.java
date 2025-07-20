@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import vku.apiservice.tutorials.dtos.AuthResponseDto;
-import vku.apiservice.tutorials.dtos.LoginRequestDto;
+import vku.apiservice.tutorials.dtos.LoginDto;
 import vku.apiservice.tutorials.dtos.RoleDto;
 import vku.apiservice.tutorials.dtos.UserDto;
 import vku.apiservice.tutorials.entities.User;
@@ -24,7 +24,7 @@ public class AuthService {
   private final JwtService jwtService;
   private final UserService userService;
 
-  public AuthResponseDto login(LoginRequestDto loginRequest) {
+  public AuthResponseDto login(LoginDto loginRequest) {
     // Find user by email (username)
     User user = userService.findByEmail(loginRequest.getUsername())
         .orElseThrow(() -> new HttpException("User not found with email: " + loginRequest.getUsername(), HttpStatus.NOT_FOUND));
@@ -60,10 +60,10 @@ public class AuthService {
         .id(user.getId())
         .name(user.getName())
         .email(user.getEmail())
-        // .createdAt(user.getCreatedAt())
-        // .updatedAt(user.getUpdatedAt())
-        // .createdBy(user.getCreatedBy())
-        // .updatedBy(user.getUpdatedBy())
+        .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .createdBy(user.getCreatedBy())
+        .updatedBy(user.getUpdatedBy())
         .build();
   }
 }
