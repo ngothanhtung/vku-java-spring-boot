@@ -58,4 +58,9 @@ public class TaskController {
     public Iterable<TaskDto> getTasksByAssignee(@PathVariable("assigneeId") String assigneeId) {
         return taskService.getTasksByAssignee(assigneeId);
     }
+
+    @GetMapping("/project/{projectId}")
+    public Iterable<TaskDto> getTasksByProject(@PathVariable("projectId") String projectId) {
+        return taskService.getTasksByProject(projectId);
+    }
 }

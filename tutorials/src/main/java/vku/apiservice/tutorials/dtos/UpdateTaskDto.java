@@ -10,7 +10,8 @@ import vku.apiservice.tutorials.validation.ValidTaskStatus;
 
 /**
  * DTO for updating task information.
- * All fields are optional to support partial updates - only non-null fields will be updated.
+ * All fields are optional to support partial updates - only non-null fields
+ * will be updated.
  */
 @Data
 @Builder
@@ -32,6 +33,9 @@ public class UpdateTaskDto {
 
     private String assigneeId;
 
+    // Optional: Project ID (can be null to remove from project)
+    private String projectId;
+
     /**
      * Checks if at least one field is provided for update
      */
@@ -40,7 +44,8 @@ public class UpdateTaskDto {
                 description != null ||
                 status != null ||
                 priority != null ||
-                assigneeId != null;
+                assigneeId != null ||
+                projectId != null;
     }
 
     /**
@@ -64,5 +69,9 @@ public class UpdateTaskDto {
 
     public boolean hasValidAssigneeId() {
         return assigneeId != null && !assigneeId.trim().isEmpty();
+    }
+
+    public boolean hasValidProjectId() {
+        return projectId != null && !projectId.trim().isEmpty();
     }
 }

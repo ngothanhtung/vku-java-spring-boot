@@ -25,6 +25,8 @@ public class TaskDto {
 
     private AssigneeDto assignee;
 
+    private ProjectSummaryDto project;
+
     // Audit fields
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -50,6 +50,11 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "assignee_id") // Optional: specify the foreign key column
     private User assignee;
 
+    // Many Tasks can belong to one Project (nullable)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id") // Optional: specify the foreign key column
+    private Project project;
+
     @PrePersist
     public void prePersist() {
         if (this.status == null) {

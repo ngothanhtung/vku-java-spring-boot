@@ -8,13 +8,16 @@ import org.springframework.stereotype.Service;
 
 import vku.apiservice.tutorials.dtos.AssigneeDto;
 import vku.apiservice.tutorials.dtos.CreateTaskDto;
+import vku.apiservice.tutorials.dtos.ProjectSummaryDto;
 import vku.apiservice.tutorials.dtos.TaskDto;
 import vku.apiservice.tutorials.dtos.UpdateTaskDto;
+import vku.apiservice.tutorials.entities.Project;
 import vku.apiservice.tutorials.entities.Task;
 import vku.apiservice.tutorials.entities.User;
 import vku.apiservice.tutorials.enums.TaskPriority;
 import vku.apiservice.tutorials.enums.TaskStatus;
 import vku.apiservice.tutorials.exceptions.HttpException;
+import vku.apiservice.tutorials.repositories.ProjectRepository;
 import vku.apiservice.tutorials.repositories.TaskRepository;
 import vku.apiservice.tutorials.repositories.UserRepository;
 
@@ -22,10 +25,13 @@ import vku.apiservice.tutorials.repositories.UserRepository;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository,
+            ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
     }
 
     public Task create(CreateTaskDto data) {
@@ -45,6 +51,14 @@ public class TaskService {
         }
 
         task.setAssignee(user);
+
+        // Handle optional project assignment
+        if (data.getProjectId() != null && !data.getProjectId().trim().isEmpty()) {
+            Project project = projectRepository.findById(data.getProjectId())
+                    .orElseThrow(() -> new HttpException("Project not found with id: " + data.getProjectId(),
+                            HttpStatus.BAD_REQUEST));
+            task.setProject(project);
+        }
 
         return this.taskRepository.save(task); // @PrePersist will set defaults if needed
     }
@@ -68,6 +82,18 @@ public class TaskService {
 
         List<Task> tasks = taskRepository.findAllTasksWithAssignee().stream()
                 .filter(task -> task.getAssignee() != null && task.getAssignee().getId().equals(assigneeId))
+                .toList();
+        return this.convertToDtoList(tasks);
+    }
+
+    // Get tasks by project
+    public List<TaskDto> getTasksByProject(String projectId) {
+        // Verify project exists
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new HttpException("Project not found with id: " + projectId, HttpStatus.NOT_FOUND));
+
+        List<Task> tasks = taskRepository.findAll().stream()
+                .filter(task -> task.getProject() != null && task.getProject().getId().equals(projectId))
                 .toList();
         return this.convertToDtoList(tasks);
     }
@@ -107,6 +133,15 @@ public class TaskService {
                     assignee.getId(),
                     assignee.getName(),
                     assignee.getEmail()));
+        }
+
+        // Convert Project to ProjectSummaryDto if exists
+        if (task.getProject() != null) {
+            Project project = task.getProject();
+            dto.setProject(new ProjectSummaryDto(
+                    project.getId(),
+                    project.getName(),
+                    project.getDescription()));
         }
 
         // Map audit fields
@@ -155,7 +190,8 @@ public class TaskService {
     }
 
     /**
-     * Updates a task using UpdateTaskDto with improved validation and error handling
+     * Updates a task using UpdateTaskDto with improved validation and error
+     * handling
      */
     public Task updateTask(String id, UpdateTaskDto data) {
         // Validate that at least one field is provided
@@ -192,6 +228,20 @@ public class TaskService {
                     .orElseThrow(() -> new HttpException("User not found with id: " + data.getAssigneeId(),
                             HttpStatus.BAD_REQUEST));
             existingTask.setAssignee(user);
+        }
+
+        // Update project if provided
+        if (data.getProjectId() != null) {
+            if (data.hasValidProjectId()) {
+                // Assign to project
+                Project project = projectRepository.findById(data.getProjectId())
+                        .orElseThrow(() -> new HttpException("Project not found with id: " + data.getProjectId(),
+                                HttpStatus.BAD_REQUEST));
+                existingTask.setProject(project);
+            } else {
+                // Remove from project (empty string or just spaces)
+                existingTask.setProject(null);
+            }
         }
 
         return taskRepository.save(existingTask);

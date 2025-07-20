@@ -25,4 +25,7 @@ public class CreateTaskDto {
 
     @NotBlank(message = "Id of Assignee is required")
     private String assigneeId;
+
+    // Optional: Project ID (can be null)
+    private String projectId;
 }
