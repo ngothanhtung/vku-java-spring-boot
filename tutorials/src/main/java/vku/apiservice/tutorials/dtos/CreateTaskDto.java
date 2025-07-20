@@ -17,10 +17,10 @@ public class CreateTaskDto {
     @NotBlank(message = "Description is required")
     private String description;
 
-    @ValidTaskStatus
+    @ValidTaskStatus()
     private String status; // Optional, will be handled in service with default
 
-    @ValidTaskPriority
+    @ValidTaskPriority()
     private String priority; // Optional, will be handled in service with default
 
     @NotBlank(message = "Id of Assignee is required")
