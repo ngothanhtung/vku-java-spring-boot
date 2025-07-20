@@ -20,7 +20,11 @@ public final class PreAuthorizeUtil {
   public static final String MANAGER_OR_USER = "hasAnyRole('" + RoleConstants.MANAGER + "', '" + RoleConstants.USER
       + "')";
 
-  public static final String ALL_AUTHENTICATED = "hasAnyRole('" + RoleConstants.ADMIN + "', '" + RoleConstants.MANAGER
+  // Allow any authenticated user with valid JWT (any role or no role)
+  public static final String ALL_AUTHENTICATED = "isAuthenticated()";
+
+  // Specific roles only
+  public static final String ALL_WITH_ROLES = "hasAnyRole('" + RoleConstants.ADMIN + "', '" + RoleConstants.MANAGER
       + "', '" + RoleConstants.USER + "')";
 
   // Common patterns with user ownership
