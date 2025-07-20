@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "java.import.gradle.enabled": true,
+    "java.compile.nullAnalysis.mode": "automatic"
+  }
+}
