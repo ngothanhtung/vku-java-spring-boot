@@ -51,6 +51,39 @@ public class UserService {
         return Optional.of(convertToDto(user));
     }
 
+    public UserDto getUserById(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new HttpException("User not found with id: " + id, HttpStatus.NOT_FOUND));
+        return convertToDto(user);
+    }
+
+    public UserDto updateUser(String id, CreateUserDto data) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new HttpException("User not found with id: " + id, HttpStatus.NOT_FOUND));
+
+        user.setName(data.getName());
+        user.setEmail(data.getEmail());
+
+        if (data.getPassword() != null && !data.getPassword().isEmpty()) {
+            user.setPassword(data.getPassword());
+        }
+
+        User updatedUser = userRepository.save(user);
+        return convertToDto(updatedUser);
+    }
+
+    public void deleteUser(String id) {
+        if (!userRepository.existsById(id)) {
+            throw new HttpException("User not found with id: " + id, HttpStatus.NOT_FOUND);
+        }
+        userRepository.deleteById(id);
+    }
+
+    public boolean isCurrentUser(String userId, String currentUserEmail) {
+        Optional<User> user = userRepository.findById(userId);
+        return user.isPresent() && user.get().getEmail().equals(currentUserEmail);
+    }
+
     /**
      * Converts User entity to UserDto with proper mapping of all fields
      */

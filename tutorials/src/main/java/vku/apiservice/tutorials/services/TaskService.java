@@ -246,4 +246,18 @@ public class TaskService {
 
         return taskRepository.save(existingTask);
     }
+
+    /**
+     * Check if the given user is the owner/assignee of tasks
+     * Used for RBAC authorization
+     */
+    public boolean isTaskOwner(String assigneeId, String currentUserEmail) {
+        Optional<User> currentUser = userRepository.findByEmail(currentUserEmail);
+        if (!currentUser.isPresent()) {
+            return false;
+        }
+
+        // Check if the current user is the assignee
+        return currentUser.get().getId().equals(assigneeId);
+    }
 }

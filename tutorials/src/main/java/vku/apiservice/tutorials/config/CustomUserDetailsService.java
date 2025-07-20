@@ -27,17 +27,30 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     List<GrantedAuthority> authorities = new ArrayList<>();
 
-    // Add user roles as authorities
+    // Add user roles as authorities with both ROLE_ prefix and without prefix for
+    // flexibility
     if (user.getUserRoles() != null) {
       for (UserRole userRole : user.getUserRoles()) {
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getName()));
+        if (userRole.isEnabled()) { // Only include enabled roles
+          String roleCode = userRole.getRole().getCode();
+
+          // Add role with ROLE_ prefix (Spring Security standard)
+          authorities.add(new SimpleGrantedAuthority("ROLE_" + roleCode.toUpperCase()));
+
+          // Add role without prefix for @PreAuthorize usage
+          authorities.add(new SimpleGrantedAuthority(roleCode.toUpperCase()));
+        }
       }
     }
 
     return org.springframework.security.core.userdetails.User.builder()
         .username(user.getEmail())
-        .password(user.getPassword())
+        .password(user.getPassword() != null ? user.getPassword() : "")
         .authorities(authorities)
+        .accountExpired(false)
+        .accountLocked(false)
+        .credentialsExpired(false)
+        .disabled(false)
         .build();
   }
 }
