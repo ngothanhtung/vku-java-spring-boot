@@ -1,16 +1,29 @@
 {
+  "groups": [
+    {
+      "name": "application.security.jwt",
+      "type": "application.security.jwt",
+      "sourceType": "com.example.security.jwt.JwtProperties"
+    }
+  ],
   "properties": [
     {
-      "name": "app.jwt.secret",
+      "name": "application.security.jwt.secret-key",
       "type": "java.lang.String",
-      "description": "Secret key used for JWT token signing and validation. This should be a strong, random string in production.",
-      "defaultValue": "myVerySecretJwtKey1234567890123456789012345678901234567890"
+      "description": "Secret key for signing JWT tokens.",
+      "sourceType": "com.example.security.jwt.JwtProperties"
     },
     {
-      "name": "app.jwt.expiration",
+      "name": "application.security.jwt.expiration",
       "type": "java.lang.Long",
-      "description": "JWT token expiration time in seconds. Default is 86400 seconds (24 hours).",
-      "defaultValue": 86400
+      "description": "JWT token expiration time in milliseconds.",
+      "sourceType": "com.example.security.jwt.JwtProperties"
+    },
+    {
+      "name": "application.security.jwt.refresh-token.expiration",
+      "type": "java.lang.Long",
+      "description": "Refresh token expiration time in milliseconds.",
+      "sourceType": "com.example.security.jwt.JwtProperties"
     }
   ]
 }
