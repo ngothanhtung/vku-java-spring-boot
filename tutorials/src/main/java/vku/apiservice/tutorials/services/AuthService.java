@@ -9,11 +9,8 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vku.apiservice.tutorials.dtos.AuthResponseDto;
-import vku.apiservice.tutorials.dtos.LoginDto;
-import vku.apiservice.tutorials.dtos.RefreshTokenDto;
-import vku.apiservice.tutorials.dtos.RoleDto;
-import vku.apiservice.tutorials.dtos.UserDto;
+import vku.apiservice.tutorials.dtos.*;
+import vku.apiservice.tutorials.dtos.LoginResponseDto;
 import vku.apiservice.tutorials.entities.User;
 import vku.apiservice.tutorials.exceptions.HttpException;
 
@@ -34,8 +31,8 @@ public class AuthService {
   @Value("${application.security.jwt.refresh-token.expiration}")
   private long refreshExpiration;
 
-  public AuthResponseDto login(LoginDto loginRequest) {
-    // Find user by email (username)
+  public LoginResponseDto login(LoginRequestDto loginRequest) {
+    // Find the user by email (username)
     User user = userService.findByEmail(loginRequest.getUsername())
         .orElseThrow(
             () -> new HttpException("User not found with email: " + loginRequest.getUsername(), HttpStatus.NOT_FOUND));
@@ -48,11 +45,11 @@ public class AuthService {
     return generateAuthResponse(user);
   }
 
-  public AuthResponseDto refreshToken(RefreshTokenDto refreshRequest) {
+  public LoginResponseDto refreshToken(RefreshTokenRequestDto refreshRequest) {
     try {
       String refreshToken = refreshRequest.getRefreshToken();
 
-      // Extract username from refresh token
+      // Extract username from a refresh token
       String username = jwtService.extractUsername(refreshToken);
 
       // Validate refresh token first
@@ -60,7 +57,7 @@ public class AuthService {
         throw new HttpException("Invalid or expired refresh token", HttpStatus.UNAUTHORIZED);
       }
 
-      // Find user by email (refresh token only contains minimal data)
+      // Find the user by email (refresh token only contains minimal data)
       User user = userService.findByEmail(username)
           .orElseThrow(() -> new HttpException("User not found", HttpStatus.NOT_FOUND));
 
@@ -78,27 +75,27 @@ public class AuthService {
   /**
    * Helper method to generate AuthResponse with fresh user data
    */
-  private AuthResponseDto generateAuthResponse(User user) {
-    // Get fresh user roles from database
-    List<RoleDto> roles = user.getUserRoles().stream()
-        .map(userRole -> new RoleDto(userRole.getRole().getId(), userRole.getRole().getName()))
+  private LoginResponseDto generateAuthResponse(User user) {
+    // Get fresh user roles from the database
+    List<RoleResponseDto> roles = user.getUserRoles().stream()
+        .map(userRole -> new RoleResponseDto(userRole.getRole().getId(), userRole.getRole().getCode(), userRole.getRole().getName()))
         .collect(Collectors.toList());
 
-    // Create UserDto with fresh data
-    UserDto userDto = new UserDto();
-    userDto.setId(user.getId());
-    userDto.setName(user.getName());
-    userDto.setEmail(user.getEmail());
-    userDto.setRoles(roles);
+    // Create UserResponseDto with fresh data
+    UserResponseDto userResponseDto = new UserResponseDto();
+    userResponseDto.setId(user.getId());
+    userResponseDto.setName(user.getName());
+    userResponseDto.setEmail(user.getEmail());
+    userResponseDto.setRoles(roles);
 
-    // Generate new access token (with full data + roles)
+    // Generate a new access token (with full data + roles)
     String accessToken = jwtService.generateAccessToken(user);
 
-    // Generate new refresh token (with minimal data only)
+    // Generate a new refresh token (with minimal data only)
     String refreshToken = jwtService.generateRefreshToken(user);
 
-    return new AuthResponseDto(
-        userDto,
+    return new LoginResponseDto(
+            userResponseDto,
         accessToken,
         refreshToken,
         jwtExpiration / 1000,

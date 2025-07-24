@@ -10,7 +10,7 @@ import vku.apiservice.tutorials.enums.TaskStatus;
 
 @Getter
 @Setter
-public class TaskDto {
+public class TaskResponseDto {
     private String id;
     private String title;
     private String description;
@@ -23,9 +23,9 @@ public class TaskDto {
     private TaskStatus status;
     private TaskPriority priority;
 
-    private AssigneeDto assignee;
+    private AssigneeResponseDto assignee;
 
-    private ProjectSummaryDto project;
+    private ProjectResponseDto project;
 
     // Audit fields
     private LocalDateTime createdAt;

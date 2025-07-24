@@ -5,12 +5,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProjectSummaryDto {
+public class ProjectResponseDto {
   private String id;
   private String name;
   private String description;
 
-  public ProjectSummaryDto(String id, String name, String description) {
+  public ProjectResponseDto(String id, String name, String description) {
     this.id = id;
     this.name = name;
     this.description = description;

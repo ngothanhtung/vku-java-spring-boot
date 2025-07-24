@@ -1,6 +1,5 @@
 package vku.apiservice.tutorials.dtos;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -15,16 +14,14 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
-public class UserDto {
+public class RoleResponseDto {
     private String id;
+    private String code;
     private String name;
-    private String email;
-    private List<RoleDto> roles;
 
-    // Audit fields from BaseEntity
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    public RoleResponseDto(String id, String code, String name) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+    }
 }

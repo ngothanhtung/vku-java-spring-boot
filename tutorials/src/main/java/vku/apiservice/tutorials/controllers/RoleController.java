@@ -1,7 +1,7 @@
 package vku.apiservice.tutorials.controllers;
 
-import vku.apiservice.tutorials.dtos.CreateRoleDto;
-import vku.apiservice.tutorials.dtos.UpdateRoleDto;
+import vku.apiservice.tutorials.dtos.CreateRoleRequestDto;
+import vku.apiservice.tutorials.dtos.UpdateRoleRequestDto;
 import vku.apiservice.tutorials.entities.Role;
 import vku.apiservice.tutorials.services.RoleService;
 import jakarta.validation.Valid;
@@ -20,12 +20,12 @@ public class RoleController {
     }
 
     @PostMapping()
-    public Role create(@RequestBody @Valid CreateRoleDto data) {
+    public Role create(@RequestBody @Valid CreateRoleRequestDto data) {
         return roleService.create(data);
     }
 
     @PatchMapping("/{id}")
-    public Role update(@PathVariable("id") String id, @RequestBody @Valid UpdateRoleDto data) {
+    public Role update(@PathVariable("id") String id, @RequestBody @Valid UpdateRoleRequestDto data) {
         return roleService.update(id, data);
     }
 

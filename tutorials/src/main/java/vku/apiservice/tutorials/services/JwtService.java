@@ -18,7 +18,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import vku.apiservice.tutorials.config.JwtConfigProperties;
-import vku.apiservice.tutorials.dtos.RoleDto;
 import vku.apiservice.tutorials.entities.User;
 
 /**

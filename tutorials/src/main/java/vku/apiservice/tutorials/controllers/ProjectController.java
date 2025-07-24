@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vku.apiservice.tutorials.config.PreAuthorizeUtil;
-import vku.apiservice.tutorials.dtos.CreateProjectDto;
-import vku.apiservice.tutorials.dtos.ProjectDto;
-import vku.apiservice.tutorials.dtos.UpdateProjectDto;
+import vku.apiservice.tutorials.dtos.CreateProjectRequestDto;
+import vku.apiservice.tutorials.dtos.ProjectWithTasksResponseDto;
+import vku.apiservice.tutorials.dtos.UpdateProjectRequestDto;
 import vku.apiservice.tutorials.entities.Project;
 import vku.apiservice.tutorials.services.ProjectService;
 
@@ -35,26 +35,26 @@ public class ProjectController {
   }
 
   @PostMapping
-  public ResponseEntity<ProjectDto> createProject(@RequestBody @Valid CreateProjectDto data) {
+  public ResponseEntity<ProjectWithTasksResponseDto> createProject(@RequestBody @Valid CreateProjectRequestDto data) {
     Project project = projectService.create(data);
-    ProjectDto projectDto = projectService.convertToDto(project);
-    return ResponseEntity.status(HttpStatus.CREATED).body(projectDto);
+    ProjectWithTasksResponseDto projectWithTasksResponseDto = projectService.convertToDto(project);
+    return ResponseEntity.status(HttpStatus.CREATED).body(projectWithTasksResponseDto);
   }
 
   @PutMapping("/{id}")
-  public ProjectDto updateProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectDto data) {
+  public ProjectWithTasksResponseDto updateProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectRequestDto data) {
     Project project = projectService.updateProject(id, data);
     return projectService.convertToDto(project);
   }
 
   @PatchMapping("/{id}")
-  public ProjectDto patchProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectDto data) {
+  public ProjectWithTasksResponseDto patchProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectRequestDto data) {
     Project project = projectService.updateProject(id, data);
     return projectService.convertToDto(project);
   }
 
   @GetMapping
-  public List<ProjectDto> getProjects(
+  public List<ProjectWithTasksResponseDto> getProjects(
       @RequestParam(value = "includeTasks", defaultValue = "false") boolean includeTasks) {
     if (includeTasks) {
       return projectService.getProjectsWithTasks();
@@ -63,7 +63,7 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}")
-  public ProjectDto getProjectById(@PathVariable("id") String id) {
+  public ProjectWithTasksResponseDto getProjectById(@PathVariable("id") String id) {
     return projectService.getProjectDtoById(id);
   }
 

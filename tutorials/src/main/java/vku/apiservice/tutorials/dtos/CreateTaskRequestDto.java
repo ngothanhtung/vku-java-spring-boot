@@ -10,7 +10,7 @@ import vku.apiservice.tutorials.validation.ValidTaskStatus;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateTaskDto {
+public class CreateTaskRequestDto {
     @NotBlank(message = "Title is required")
     private String title;
 

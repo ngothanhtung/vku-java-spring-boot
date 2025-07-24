@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import vku.apiservice.tutorials.config.PreAuthorizeUtil;
-import vku.apiservice.tutorials.dtos.CreateTaskDto;
-import vku.apiservice.tutorials.dtos.TaskDto;
-import vku.apiservice.tutorials.dtos.UpdateTaskDto;
+import vku.apiservice.tutorials.dtos.CreateTaskRequestDto;
+import vku.apiservice.tutorials.dtos.TaskResponseDto;
+import vku.apiservice.tutorials.dtos.UpdateTaskRequestDto;
 import vku.apiservice.tutorials.entities.Task;
 import vku.apiservice.tutorials.services.TaskService;
 
@@ -32,44 +32,44 @@ public class TaskController {
 
     @PostMapping
     @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER)
-    public TaskDto createTask(@RequestBody @Valid CreateTaskDto data) {
+    public TaskResponseDto createTask(@RequestBody @Valid CreateTaskRequestDto data) {
         Task task = taskService.create(data);
         return taskService.convertToDto(task);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskService.isTaskOwnerById(#id, authentication.name)")
-    public TaskDto updateTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskDto data) {
+    public TaskResponseDto updateTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskRequestDto data) {
         Task task = taskService.updateTask(id, data);
         return taskService.convertToDto(task);
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskService.isTaskOwnerById(#id, authentication.name)")
-    public TaskDto patchTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskDto data) {
+    public TaskResponseDto patchTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskRequestDto data) {
         Task task = taskService.updateTask(id, data);
         return taskService.convertToDto(task);
     }
 
     @GetMapping()
-    public Iterable<TaskDto> getTasks() {
+    public Iterable<TaskResponseDto> getTasks() {
         return taskService.getTasks();
     }
 
     @GetMapping("/{id}")
-    public TaskDto getTaskById(@PathVariable("id") String id) {
+    public TaskResponseDto getTaskById(@PathVariable("id") String id) {
         Task task = taskService.getTaskById(id);
         return taskService.convertToDto(task);
     }
 
     @GetMapping("/assignee/{assigneeId}")
     @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskService.isTaskOwner(#assigneeId, authentication.name)")
-    public Iterable<TaskDto> getTasksByAssignee(@PathVariable("assigneeId") String assigneeId) {
+    public Iterable<TaskResponseDto> getTasksByAssignee(@PathVariable("assigneeId") String assigneeId) {
         return taskService.getTasksByAssignee(assigneeId);
     }
 
     @GetMapping("/project/{projectId}")
-    public Iterable<TaskDto> getTasksByProject(@PathVariable("projectId") String projectId) {
+    public Iterable<TaskResponseDto> getTasksByProject(@PathVariable("projectId") String projectId) {
         return taskService.getTasksByProject(projectId);
     }
 

@@ -6,11 +6,11 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import vku.apiservice.tutorials.dtos.CreateProjectDto;
-import vku.apiservice.tutorials.dtos.ProjectDto;
-import vku.apiservice.tutorials.dtos.ProjectSummaryDto;
-import vku.apiservice.tutorials.dtos.TaskDto;
-import vku.apiservice.tutorials.dtos.UpdateProjectDto;
+import vku.apiservice.tutorials.dtos.CreateProjectRequestDto;
+import vku.apiservice.tutorials.dtos.ProjectWithTasksResponseDto;
+import vku.apiservice.tutorials.dtos.ProjectResponseDto;
+import vku.apiservice.tutorials.dtos.TaskResponseDto;
+import vku.apiservice.tutorials.dtos.UpdateProjectRequestDto;
 import vku.apiservice.tutorials.entities.Project;
 import vku.apiservice.tutorials.exceptions.HttpException;
 import vku.apiservice.tutorials.repositories.ProjectRepository;
@@ -25,7 +25,7 @@ public class ProjectService {
     this.taskService = taskService;
   }
 
-  public Project create(CreateProjectDto data) {
+  public Project create(CreateProjectRequestDto data) {
     // Check if project name already exists
     if (projectRepository.existsByName(data.getName())) {
       throw new HttpException("Project name already exists: " + data.getName(), HttpStatus.CONFLICT);
@@ -38,12 +38,12 @@ public class ProjectService {
     return this.projectRepository.save(project);
   }
 
-  public List<ProjectDto> getProjects() {
+  public List<ProjectWithTasksResponseDto> getProjects() {
     List<Project> projects = projectRepository.findAll();
     return projects.stream().map(this::convertToDto).collect(Collectors.toList());
   }
 
-  public List<ProjectDto> getProjectsWithTasks() {
+  public List<ProjectWithTasksResponseDto> getProjectsWithTasks() {
     List<Project> projects = projectRepository.findAllProjectsWithTasks();
     return projects.stream().map(this::convertToDtoWithTasks).collect(Collectors.toList());
   }
@@ -53,12 +53,12 @@ public class ProjectService {
         .orElseThrow(() -> new HttpException("Project not found with id: " + id, HttpStatus.NOT_FOUND));
   }
 
-  public ProjectDto getProjectDtoById(String id) {
+  public ProjectWithTasksResponseDto getProjectDtoById(String id) {
     Project project = getProjectById(id);
     return convertToDto(project);
   }
 
-  public Project updateProject(String id, UpdateProjectDto data) {
+  public Project updateProject(String id, UpdateProjectRequestDto data) {
     if (!data.hasAnyField()) {
       throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
     }
@@ -87,8 +87,8 @@ public class ProjectService {
     projectRepository.delete(project);
   }
 
-  public ProjectDto convertToDto(Project project) {
-    ProjectDto dto = new ProjectDto();
+  public ProjectWithTasksResponseDto convertToDto(Project project) {
+    ProjectWithTasksResponseDto dto = new ProjectWithTasksResponseDto();
     dto.setId(project.getId());
     dto.setName(project.getName());
     dto.setDescription(project.getDescription());
@@ -102,22 +102,22 @@ public class ProjectService {
     return dto;
   }
 
-  public ProjectDto convertToDtoWithTasks(Project project) {
-    ProjectDto dto = convertToDto(project);
+  public ProjectWithTasksResponseDto convertToDtoWithTasks(Project project) {
+    ProjectWithTasksResponseDto dto = convertToDto(project);
 
     // Convert tasks to DTOs if they exist
     if (project.getTasks() != null && !project.getTasks().isEmpty()) {
-      List<TaskDto> taskDtos = project.getTasks().stream()
+      List<TaskResponseDto> taskResponseDtos = project.getTasks().stream()
           .map(taskService::convertToDto)
           .collect(Collectors.toList());
-      dto.setTasks(taskDtos);
+      dto.setTasks(taskResponseDtos);
     }
 
     return dto;
   }
 
-  public ProjectSummaryDto convertToSummaryDto(Project project) {
-    return new ProjectSummaryDto(
+  public ProjectResponseDto convertToSummaryDto(Project project) {
+    return new ProjectResponseDto(
         project.getId(),
         project.getName(),
         project.getDescription());

@@ -1,8 +1,8 @@
 package vku.apiservice.tutorials.controllers;
 
 import vku.apiservice.tutorials.config.PreAuthorizeUtil;
-import vku.apiservice.tutorials.dtos.CreateUserDto;
-import vku.apiservice.tutorials.dtos.UserDto;
+import vku.apiservice.tutorials.dtos.CreateUserRequestDto;
+import vku.apiservice.tutorials.dtos.UserResponseDto;
 import vku.apiservice.tutorials.entities.User;
 import vku.apiservice.tutorials.services.UserService;
 import jakarta.validation.Valid;
@@ -20,22 +20,22 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody @Valid CreateUserDto data) {
+    public User createUser(@RequestBody @Valid CreateUserRequestDto data) {
         return userService.createUser(data);
     }
 
     @GetMapping
-    public Iterable<UserDto> getUsers() {
+    public Iterable<UserResponseDto> getUsers() {
         return userService.getUsers();
     }
 
     @GetMapping("/{id}")
-    public UserDto getUserById(@PathVariable("id") String id) {
+    public UserResponseDto getUserById(@PathVariable("id") String id) {
         return userService.getUserById(id);
     }
 
     @PutMapping("/{id}")
-    public UserDto updateUser(@PathVariable("id") String id, @RequestBody @Valid CreateUserDto data) {
+    public UserResponseDto updateUser(@PathVariable("id") String id, @RequestBody @Valid CreateUserRequestDto data) {
         return userService.updateUser(id, data);
     }
 

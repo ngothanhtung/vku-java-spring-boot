@@ -8,9 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import vku.apiservice.tutorials.dtos.CreateUserDto;
-import vku.apiservice.tutorials.dtos.RoleDto;
-import vku.apiservice.tutorials.dtos.UserDto;
+import vku.apiservice.tutorials.dtos.CreateUserRequestDto;
+import vku.apiservice.tutorials.dtos.RoleResponseDto;
+import vku.apiservice.tutorials.dtos.UserResponseDto;
 import vku.apiservice.tutorials.entities.User;
 import vku.apiservice.tutorials.exceptions.HttpException;
 import vku.apiservice.tutorials.repositories.UserRepository;
@@ -20,7 +20,7 @@ import vku.apiservice.tutorials.repositories.UserRepository;
 public class UserService {
     private final UserRepository userRepository;
 
-    public User createUser(CreateUserDto data) {
+    public User createUser(CreateUserRequestDto data) {
         // Check if email already exists
         if (userRepository.existsByEmail(data.getEmail())) {
             throw new HttpException("Email already exists: " + data.getEmail(), HttpStatus.CONFLICT);
@@ -34,7 +34,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public List<UserDto> getUsers() {
+    public List<UserResponseDto> getUsers() {
         List<User> users = userRepository.findAllUsersWithRoles();
 
         return users.stream().map(this::convertToDto).collect(Collectors.toList());
@@ -44,20 +44,20 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public Optional<UserDto> findByEmailWithRoles(String email) {
+    public Optional<UserResponseDto> findByEmailWithRoles(String email) {
         User user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() -> new HttpException("User not found with email: " + email, HttpStatus.NOT_FOUND));
         // return user with roles relationships
         return Optional.of(convertToDto(user));
     }
 
-    public UserDto getUserById(String id) {
+    public UserResponseDto getUserById(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new HttpException("User not found with id: " + id, HttpStatus.NOT_FOUND));
         return convertToDto(user);
     }
 
-    public UserDto updateUser(String id, CreateUserDto data) {
+    public UserResponseDto updateUser(String id, CreateUserRequestDto data) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new HttpException("User not found with id: " + id, HttpStatus.NOT_FOUND));
 
@@ -85,22 +85,18 @@ public class UserService {
     }
 
     /**
-     * Converts User entity to UserDto with proper mapping of all fields
+     * Converts User entity to UserResponseDto with proper mapping of all fields
      */
-    private UserDto convertToDto(User user) {
-        List<RoleDto> roles = user.getUserRoles().stream()
-                .map(userRole -> new RoleDto(userRole.getRole().getId(), userRole.getRole().getName()))
+    private UserResponseDto convertToDto(User user) {
+        List<RoleResponseDto> roles = user.getUserRoles().stream()
+                .map(userRole -> new RoleResponseDto(userRole.getRole().getId(), userRole.getRole().getCode(), userRole.getRole().getName()))
                 .collect(Collectors.toList());
 
-        return UserDto.builder()
+        return UserResponseDto.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .roles(roles)
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .createdBy(user.getCreatedBy())
-                .updatedBy(user.getUpdatedBy())
                 .build();
     }
 }

@@ -1,16 +1,17 @@
 package vku.apiservice.tutorials.dtos;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
-public class RoleDto {
+@AllArgsConstructor
+public class AssigneeResponseDto {
     private String id;
     private String name;
+    private String email;
 
-    public RoleDto(String id, String name) {
-        this.id = id;
-        this.name = name;
-    }
 }

@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import vku.apiservice.tutorials.config.PreAuthorizeUtil;
-import vku.apiservice.tutorials.dtos.AuthResponseDto;
-import vku.apiservice.tutorials.dtos.LoginDto;
-import vku.apiservice.tutorials.dtos.RefreshTokenDto;
+import vku.apiservice.tutorials.dtos.LoginResponseDto;
+import vku.apiservice.tutorials.dtos.LoginRequestDto;
+import vku.apiservice.tutorials.dtos.RefreshTokenRequestDto;
 import vku.apiservice.tutorials.services.AuthService;
 
 /**
@@ -31,15 +31,15 @@ public class AuthController {
 
   // Endpoint for user login
   @PostMapping("/login")
-  public ResponseEntity<AuthResponseDto> login(@RequestBody @Valid LoginDto data) {
-    AuthResponseDto response = authService.login(data);
+  public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid LoginRequestDto data) {
+    LoginResponseDto response = authService.login(data);
     return ResponseEntity.status(200).body(response);
   }
 
   // Endpoint for refreshing access token
   @PostMapping("/refresh")
-  public ResponseEntity<AuthResponseDto> refreshToken(@RequestBody @Valid RefreshTokenDto data) {
-    AuthResponseDto response = authService.refreshToken(data);
+  public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody @Valid RefreshTokenRequestDto data) {
+    LoginResponseDto response = authService.refreshToken(data);
     return ResponseEntity.ok(response);
   }
 

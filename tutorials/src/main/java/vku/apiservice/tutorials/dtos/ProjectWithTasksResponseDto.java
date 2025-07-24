@@ -8,12 +8,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProjectDto {
+public class ProjectWithTasksResponseDto {
   private String id;
   private String name;
   private String description;
 
-  private List<TaskDto> tasks; // Optional: include tasks in the response
+  private List<TaskResponseDto> tasks; // Optional: include tasks in the response
 
   // Audit fields
   private LocalDateTime createdAt;

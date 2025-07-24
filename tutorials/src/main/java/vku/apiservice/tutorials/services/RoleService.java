@@ -1,7 +1,7 @@
 package vku.apiservice.tutorials.services;
 
-import vku.apiservice.tutorials.dtos.CreateRoleDto;
-import vku.apiservice.tutorials.dtos.UpdateRoleDto;
+import vku.apiservice.tutorials.dtos.CreateRoleRequestDto;
+import vku.apiservice.tutorials.dtos.UpdateRoleRequestDto;
 import vku.apiservice.tutorials.entities.Role;
 import vku.apiservice.tutorials.entities.User;
 import vku.apiservice.tutorials.entities.UserRole;
@@ -32,7 +32,7 @@ public class RoleService {
         this.userRoleRepository = userRoleRepository;
     }
 
-    public Role create(CreateRoleDto data) {
+    public Role create(CreateRoleRequestDto data) {
         Role role = new Role();
         role.setCode(data.getCode());
         role.setName(data.getName());
@@ -41,7 +41,7 @@ public class RoleService {
         return this.roleRepository.save(role);
     }
 
-    public Role update(String id, UpdateRoleDto role) {
+    public Role update(String id, UpdateRoleRequestDto role) {
         Role existingRole = roleRepository.findById(id)
                 .orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
 

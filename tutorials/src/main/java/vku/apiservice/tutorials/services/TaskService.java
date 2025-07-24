@@ -6,11 +6,8 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import vku.apiservice.tutorials.dtos.AssigneeDto;
-import vku.apiservice.tutorials.dtos.CreateTaskDto;
-import vku.apiservice.tutorials.dtos.ProjectSummaryDto;
-import vku.apiservice.tutorials.dtos.TaskDto;
-import vku.apiservice.tutorials.dtos.UpdateTaskDto;
+import vku.apiservice.tutorials.dtos.*;
+import vku.apiservice.tutorials.dtos.AssigneeResponseDto;
 import vku.apiservice.tutorials.entities.Project;
 import vku.apiservice.tutorials.entities.Task;
 import vku.apiservice.tutorials.entities.User;
@@ -34,7 +31,7 @@ public class TaskService {
         this.projectRepository = projectRepository;
     }
 
-    public Task create(CreateTaskDto data) {
+    public Task create(CreateTaskRequestDto data) {
         User user = userRepository.findById(data.getAssigneeId()).orElseThrow(
                 () -> new HttpException("User not found with id: " + data.getAssigneeId(), HttpStatus.BAD_REQUEST));
 
@@ -63,7 +60,7 @@ public class TaskService {
         return this.taskRepository.save(task); // @PrePersist will set defaults if needed
     }
 
-    public List<TaskDto> getTasks() {
+    public List<TaskResponseDto> getTasks() {
         List<Task> tasks = taskRepository.findAll();
         return this.convertToDtoList(tasks);
     }
@@ -74,7 +71,7 @@ public class TaskService {
     }
 
     // Get by assignee
-    public List<TaskDto> getTasksByAssignee(String assigneeId) {
+    public List<TaskResponseDto> getTasksByAssignee(String assigneeId) {
         Optional<User> user = userRepository.findById(assigneeId);
         if (user.isEmpty()) {
             throw new HttpException("User not found with id: " + assigneeId, HttpStatus.NOT_FOUND);
@@ -87,7 +84,7 @@ public class TaskService {
     }
 
     // Get tasks by project
-    public List<TaskDto> getTasksByProject(String projectId) {
+    public List<TaskResponseDto> getTasksByProject(String projectId) {
         // Verify project exists
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new HttpException("Project not found with id: " + projectId, HttpStatus.NOT_FOUND));
@@ -115,8 +112,8 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public TaskDto convertToDto(Task task) {
-        TaskDto dto = new TaskDto();
+    public TaskResponseDto convertToDto(Task task) {
+        TaskResponseDto dto = new TaskResponseDto();
         dto.setId(task.getId());
         dto.setTitle(task.getTitle());
         dto.setDescription(task.getDescription());
@@ -126,19 +123,19 @@ public class TaskService {
         dto.setStatus(task.getStatus());
         dto.setPriority(task.getPriority());
 
-        // Convert User to AssigneeDto to exclude audit fields
+        // Convert User to AssigneeResponseDto to exclude audit fields
         if (task.getAssignee() != null) {
             User assignee = task.getAssignee();
-            dto.setAssignee(new AssigneeDto(
+            dto.setAssignee(new AssigneeResponseDto(
                     assignee.getId(),
                     assignee.getName(),
                     assignee.getEmail()));
         }
 
-        // Convert Project to ProjectSummaryDto if exists
+        // Convert Project to ProjectResponseDto if exists
         if (task.getProject() != null) {
             Project project = task.getProject();
-            dto.setProject(new ProjectSummaryDto(
+            dto.setProject(new ProjectResponseDto(
                     project.getId(),
                     project.getName(),
                     project.getDescription()));
@@ -153,7 +150,7 @@ public class TaskService {
         return dto;
     }
 
-    public List<TaskDto> convertToDtoList(List<Task> tasks) {
+    public List<TaskResponseDto> convertToDtoList(List<Task> tasks) {
         return tasks.stream().map(this::convertToDto).toList();
     }
 
@@ -163,7 +160,7 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
-    public Task updateTask(String id, CreateTaskDto data) {
+    public Task updateTask(String id, CreateTaskRequestDto data) {
         Task existingTask = taskRepository.findById(id)
                 .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
 
@@ -190,10 +187,10 @@ public class TaskService {
     }
 
     /**
-     * Updates a task using UpdateTaskDto with improved validation and error
+     * Updates a task using UpdateTaskRequestDto with improved validation and error
      * handling
      */
-    public Task updateTask(String id, UpdateTaskDto data) {
+    public Task updateTask(String id, UpdateTaskRequestDto data) {
         // Validate that at least one field is provided
         if (!data.hasAnyField()) {
             throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
