@@ -5,7 +5,7 @@ This Dockerfile builds a Docker image for the VKU Java Spring Boot application.
 ## Build the Docker Image
 
 ```bash
-docker build -t thanhtungo/vku-java-spring-boot:latest .
+docker build -t thanhtungo/vku-java-spring-boot:latest -f docker/Dockerfile .
 ```
 
 ## Push the Docker Image to Docker Hub
@@ -17,10 +17,12 @@ docker push thanhtungo/vku-java-spring-boot:latest
 
 ```
 
-## Run the Docker Container
-
-To run the Docker container, use the following command:
+## Run with Docker Compose
 
 ```bash
-docker run -d -p 8888:8888 --name vku-java-spring-boot thanhtungo/vku-java-spring-boot:latest
+docker compose -p vku-java-spring-boot -f docker/docker-compose.yml up
+```
+
+```bash
+docker compose -p vku-java-spring-boot -f docker/docker-compose.yml down
 ```
