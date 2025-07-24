@@ -1,5 +1,7 @@
 package vku.apiservice.tutorials.exceptions;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,5 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ErrorResponse {
     private int status;
-    private String message;
+    private List<String> messages; // Can be String or List<String>
+    private String error;
 }

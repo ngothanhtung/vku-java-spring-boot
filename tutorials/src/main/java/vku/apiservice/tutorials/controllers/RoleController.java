@@ -1,6 +1,7 @@
 package vku.apiservice.tutorials.controllers;
 
 import vku.apiservice.tutorials.dtos.CreateRoleDto;
+import vku.apiservice.tutorials.dtos.UpdateRoleDto;
 import vku.apiservice.tutorials.entities.Role;
 import vku.apiservice.tutorials.services.RoleService;
 import jakarta.validation.Valid;
@@ -19,8 +20,13 @@ public class RoleController {
     }
 
     @PostMapping()
-    public Role createRole(@RequestBody @Valid CreateRoleDto data) {
-        return roleService.createRequest(data);
+    public Role create(@RequestBody @Valid CreateRoleDto data) {
+        return roleService.create(data);
+    }
+
+    @PatchMapping("/{id}")
+    public Role update(@PathVariable("id") String id, @RequestBody @Valid UpdateRoleDto data) {
+        return roleService.update(id, data);
     }
 
     @GetMapping()
@@ -29,18 +35,14 @@ public class RoleController {
     }
 
     @PostMapping("/{id}/add-users-to-role")
-    public ResponseEntity<String> addUsersToRole(@PathVariable String id, @RequestBody List<String> userIds) {
-
+    public ResponseEntity<String> addUsersToRole(@PathVariable("id") String id, @RequestBody List<String> userIds) {
         roleService.addUsersToRole(id, userIds);
-
         return ResponseEntity.ok("Users added to role successfully!");
     }
 
     @PostMapping("/{id}/remove-users-from-role")
-    public ResponseEntity<String> removeUsersFromRole(@PathVariable String id, @RequestBody List<String> userIds) {
-
+    public ResponseEntity<String> removeUsersFromRole(@PathVariable("id") String id, @RequestBody List<String> userIds) {
         roleService.removeUsersFromRole(id, userIds);
-
         return ResponseEntity.ok("Users removed from role successfully!");
     }
 }

@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Platform-specific Gradle properties ###
+# Keep template files in repo, but ignore local overrides
+gradle.properties.local
+gradle.properties.windows
+gradle.properties.macos
