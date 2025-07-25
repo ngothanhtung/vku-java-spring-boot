@@ -1,0 +1,8 @@
+INSERT INTO roles (id, code, name, created_at, updated_at) VALUES ('d238e4ee-68ae-11f0-ba23-facf417d034b', 'Administrators', 'Administrators', NOW(), NOW()) ON DUPLICATE KEY UPDATE code = 'Administrators', updated_at = NOW();
+INSERT INTO roles (id, code, name, created_at, updated_at) VALUES ('d238e4ee-68ae-11f0-ba23-facf417d034c', 'Managers', 'Managers', NOW(), NOW()) ON DUPLICATE KEY UPDATE code = 'Managers', updated_at = NOW();
+INSERT INTO roles (id, code, name, created_at, updated_at) VALUES ('d238e4ee-68ae-11f0-ba23-facf417d034d', 'Users', 'Users', NOW(), NOW()) ON DUPLICATE KEY UPDATE code = 'Users', updated_at = NOW();
+
+INSERT INTO users (id, name, email, password, created_at, updated_at) VALUES ('ebcca554-68ae-11f0-ba23-facf417d034b', 'Ngô Thanh Tùng' ,'tungnt@softech.vn', '123456789', NOW(), NOW()) ON DUPLICATE KEY UPDATE email = 'tungnt@softech.vn', updated_at = NOW() ;
+
+INSERT INTO users_roles (user_id, role_id, enabled) VALUES ('ebcca554-68ae-11f0-ba23-facf417d034b', 'd238e4ee-68ae-11f0-ba23-facf417d034b', true) ON DUPLICATE KEY UPDATE user_id = 'ebcca554-68ae-11f0-ba23-facf417d034b', role_id = 'd238e4ee-68ae-11f0-ba23-facf417d034b', enabled = true;
+INSERT INTO users_roles (user_id, role_id, enabled) VALUES ('ebcca554-68ae-11f0-ba23-facf417d034b', 'd238e4ee-68ae-11f0-ba23-facf417d034c', true) ON DUPLICATE KEY UPDATE user_id = 'ebcca554-68ae-11f0-ba23-facf417d034b', role_id = 'd238e4ee-68ae-11f0-ba23-facf417d034c', enabled = true;

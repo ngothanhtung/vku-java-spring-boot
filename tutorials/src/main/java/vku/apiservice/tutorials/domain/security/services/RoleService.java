@@ -16,6 +16,7 @@ import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.entities.UserRole;
 import vku.apiservice.tutorials.domain.security.entities.UserRoleId;
 import vku.apiservice.tutorials.domain.security.events.RoleAssignedEvent;
+import vku.apiservice.tutorials.domain.security.events.RoleUnassignedEvent;
 import vku.apiservice.tutorials.domain.security.repositories.RoleRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRoleRepository;
@@ -147,6 +148,8 @@ public class RoleService {
 		for (String userId : userIds) {
 			UserRoleId userRoleId = new UserRoleId(userId, roleId);
 			userRoleRepository.deleteById(userRoleId);
+			// Phát sự kiện RoleUnassignedEvent
+			eventPublisher.publishEvent(new RoleUnassignedEvent(userId, roleId));
 		}
 	}
 }
