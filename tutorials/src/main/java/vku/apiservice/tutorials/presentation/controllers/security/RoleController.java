@@ -41,7 +41,8 @@ public class RoleController {
     }
 
     @PatchMapping("/{id}/add-users-to-role")
-    public ResponseEntity<String> addUsersToRole(@PathVariable("id") String id, @RequestBody UserIdsRequestDto request) {
+    public ResponseEntity<String> addUsersToRole(@PathVariable("id") String id,
+            @RequestBody UserIdsRequestDto request) {
         roleService.addUsersToRole(id, request.getUserIds());
         return ResponseEntity.ok("Users added to role successfully!");
     }

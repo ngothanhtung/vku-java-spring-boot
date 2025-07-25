@@ -1,5 +1,12 @@
 package vku.apiservice.tutorials.domain.security.services;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
 import vku.apiservice.tutorials.domain.security.dtos.CreateRoleRequestDto;
 import vku.apiservice.tutorials.domain.security.dtos.UpdateRoleRequestDto;
 import vku.apiservice.tutorials.domain.security.entities.Role;
@@ -9,142 +16,126 @@ import vku.apiservice.tutorials.domain.security.entities.UserRoleId;
 import vku.apiservice.tutorials.domain.security.repositories.RoleRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRoleRepository;
-import vku.apiservice.tutorials.infrastructure.persistence.jpa.security.UserRoleJpaRepository;
 import vku.apiservice.tutorials.presentation.exceptions.HttpException;
-
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class RoleService {
-    private final RoleRepository roleRepository;
-    private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
+	private final RoleRepository roleRepository;
+	private final UserRepository userRepository;
+	private final UserRoleRepository userRoleRepository;
 
+	public RoleService(RoleRepository roleRepository,
+			UserRepository userRepository,
+			UserRoleRepository userRoleRepository) {
+		this.roleRepository = roleRepository;
+		this.userRepository = userRepository;
+		this.userRoleRepository = userRoleRepository;
+	}
 
-    public RoleService(RoleRepository roleRepository, UserRepository userRepository, UserRoleRepository userRoleRepository,
-                       UserRoleJpaRepository userRoleJpaRepository
-                       ) {
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-        this.userRoleRepository = userRoleRepository;
+	public Role create(CreateRoleRequestDto data) {
+		Role role = new Role();
+		role.setCode(data.getCode());
+		role.setName(data.getName());
+		role.setDescription(data.getDescription());
 
-    }
+		return this.roleRepository.save(role);
+	}
 
-    public Role create(CreateRoleRequestDto data) {
-        Role role = new Role();
-        role.setCode(data.getCode());
-        role.setName(data.getName());
-        role.setDescription(data.getDescription());
+	public Role update(String id, UpdateRoleRequestDto role) {
+		Role existingRole = this.roleRepository.findById(id)
+				.orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
 
-        return this.roleRepository.save(role);
-    }
+		// Validate that at least one field is provided
+		if (!role.hasAnyField()) {
+			throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
+		}
 
-    public Role update(String id, UpdateRoleRequestDto role) {
-        Role existingRole = this.roleRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
+		// Only update fields that are present in the request
+		if (role.getCode() != null) {
+			existingRole.setCode(role.getCode());
+		}
+		if (role.getName() != null) {
+			existingRole.setName(role.getName());
+		}
+		if (role.getDescription() != null) {
+			existingRole.setDescription(role.getDescription());
+		}
 
-        // Validate that at least one field is provided
-        if (!role.hasAnyField()) {
-            throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
-        }
+		return this.roleRepository.save(existingRole);
+	}
 
-        // Only update fields that are present in the request
-        if (role.getCode() != null) {
-            existingRole.setCode(role.getCode());
-        }
-        if (role.getName() != null) {
-            existingRole.setName(role.getName());
-        }
-        if (role.getDescription() != null) {
-            existingRole.setDescription(role.getDescription());
-        }
+	public Role findById(String id) {
+		return this.roleRepository.findById(id)
+				.orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
+	}
 
-        return this.roleRepository.save(existingRole);
-    }
+	public List<Role> getRoles() {
+		return this.roleRepository.findAll();
+	}
 
-    public Role findById(String id) {
-        return this.roleRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
-    }
+	// Transactional methods for adding and removing users from roles
+	// Only allow adding/removing users if the role exists and all userIds are valid
+	// If any userId is invalid, throw an exception
+	// If the role does not exist, throw an exception
+	// If the user is already assigned to the role, do not add them again
+	// If the user is not assigned to the role, do not remove them
+	public void addUsersToRole(String roleId, List<String> userIds) {
 
-    public List<Role> getRoles() {
-        return this.roleRepository.findAll();
-    }
+		// Check if all userIds exist
+		List<User> users = userRepository.findByIdIn(userIds);
+		Set<String> foundUserIds = users.stream().map(User::getId).collect(Collectors.toSet());
 
-    public void addUsersToRole(String roleId, List<String> userIds) {
-        Role role = this.roleRepository.findById(roleId)
-                .orElseThrow(() -> new HttpException("Role not found with id: " + roleId, HttpStatus.BAD_REQUEST));
+		for (String userId : userIds) {
+			if (!foundUserIds.contains(userId)) {
+				throw new HttpException("User not found with id: " + userId, HttpStatus.BAD_REQUEST);
+			}
+		}
 
-        // 2. Check if all userIds exist
-        List<User> users = userRepository.findByIdIn(userIds);
-        Set<String> foundUserIds = users.stream().map(User::getId).collect(Collectors.toSet());
+		// Check the User-Role link exists in users_roles
+		Role role = this.roleRepository.findById(roleId)
+				.orElseThrow(() -> new HttpException("Role not found with id: " + roleId, HttpStatus.NOT_FOUND));
+		for (String userId : userIds) {
+			UserRoleId userRoleId = new UserRoleId(userId, roleId);
+			boolean exists = userRoleRepository.existsById(userRoleId);
 
-        for (String userId : userIds) {
-            if (!foundUserIds.contains(userId)) {
-                throw new HttpException("User not found with id: " + userId, HttpStatus.BAD_REQUEST);
-            }
-        }
+			if (exists) {
+				// User is already assigned to the role
+				continue;
+			}
 
-        Set<UserRole> userRoles = new HashSet<>();
+			// If we reach here, the user is not assigned to the role
+			UserRole userRole = new UserRole();
+			userRole.setId(userRoleId);
+			// Set User and Role objects to avoid null one-to-one property error
+			User user = users.stream().filter(u -> u.getId().equals(userId)).findFirst().orElse(null);
+			userRole.setUser(user);
+			userRole.setRole(role);
+			userRoleRepository.save(userRole);
+		}
+	}
 
-        for (User user : users) {
-            UserRole userRole = new UserRole();
-            userRole.setUser(user);
-            userRole.setRole(role);
-            userRole.setEnabled(true); // You can control status here
-            userRoles.add(userRole);
-        }
+	public void removeUsersFromRole(String roleId, List<String> userIds) {
+		// Check if a role exists
+		Role role = this.roleRepository.findById(roleId).orElse(null);
 
+		if (role == null) {
+			throw new HttpException("Role not found with id: " + roleId, HttpStatus.BAD_REQUEST);
+		}
 
-        try {
-            this.userRoleRepository.saveAllUserRoles(userRoles);
-        } catch (DataIntegrityViolationException e) {
-            throw new HttpException("Database constraint violation: " + e.getMessage(), HttpStatus.CONFLICT);
-        } catch (HttpException e) {
-            throw new HttpException("Failed to assign users to role: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+		// 2. Check if all userIds exist
+		List<User> users = userRepository.findByIdIn(userIds);
+		Set<String> foundUserIds = users.stream().map(User::getId).collect(Collectors.toSet());
 
-    public void removeUsersFromRole(String roleId, List<String> userIds) {
-        // Check if a role exists
-        Role role = this.roleRepository.findById(roleId).orElse(null);
+		for (String userId : userIds) {
+			if (!foundUserIds.contains(userId)) {
+				throw new HttpException("User not found with id: " + userId, HttpStatus.BAD_REQUEST);
+			}
+		}
 
-        if (role == null) {
-            throw new RuntimeException("Role not found with id: " + roleId);
-        }
-
-        // 2. Check if all userIds exist
-        List<User> users = userRepository.findByIdIn(userIds);
-        Set<String> foundUserIds = users.stream().map(User::getId).collect(Collectors.toSet());
-
-        for (String userId : userIds) {
-            if (!foundUserIds.contains(userId)) {
-                throw new RuntimeException("User not found with id: " + userId);
-            }
-        }
-
-        // 3. Check the User-Role link exists in users_roles
-        for (String userId : userIds) {
-            UserRoleId userRoleId = new UserRoleId(userId, roleId);
-            boolean exists = userRoleRepository.existsById(userRoleId);
-
-            if (!exists) {
-                throw new RuntimeException("User id " + userId + " is not assigned to Role id " + roleId);
-            }
-        }
-
-        // 4. Now Safe: delete the UserRoleRepository links
-        for (String userId : userIds) {
-            UserRoleId userRoleId = new UserRoleId(userId, roleId);
-            userRoleRepository.deleteById(userRoleId);
-        }
-    }
+		// 4. Now Safe: delete the UserRoleRepository links
+		for (String userId : userIds) {
+			UserRoleId userRoleId = new UserRoleId(userId, roleId);
+			userRoleRepository.deleteById(userRoleId);
+		}
+	}
 }
