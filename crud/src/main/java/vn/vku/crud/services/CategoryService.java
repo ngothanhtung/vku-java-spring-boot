@@ -1,29 +1,38 @@
 package vn.vku.crud.services;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import vn.vku.crud.entities.Category;
-import vn.vku.crud.repositories.CategoryRepository;
+import vn.vku.crud.repositories.CategoryJpaRepository;
+
+import java.util.List;
 
 @Service
 public class CategoryService {
-  private final CategoryRepository categoryRepository;
+    private final CategoryJpaRepository categoryJpaRepository;
 
-  public CategoryService(CategoryRepository categoryRepository) {
-    this.categoryRepository = categoryRepository;
-  }
+    public CategoryService(CategoryJpaRepository categoryJpaRepository) {
+        this.categoryJpaRepository = categoryJpaRepository;
+    }
 
-  public List<Category> getAllCategories() {
-    return categoryRepository.findAll();
-  }
+    public List<Category> getAllCategories() {
+        return categoryJpaRepository.findAll();
+    }
 
-  public Category getCategoryById(Long id) {
-    return categoryRepository.findById(id).orElse(null);
-  }
+    public Category getCategoryById(Long id) {
+        return categoryJpaRepository.findById(id).orElse(null);
+    }
 
-  public Category createCategory(Category category) {
-    return categoryRepository.save(category);
-  }
+    public Category createCategory(Category category) {
+        return categoryJpaRepository.save(category);
+    }
+
+    public Category updateCategory(Long id, Category category) {
+        this.categoryJpaRepository.findById(id).orElseThrow();
+        return categoryJpaRepository.save(category);
+    }
+
+    public void deleteCategory(Long id) {
+        this.categoryJpaRepository.findById(id).orElseThrow();
+        categoryJpaRepository.deleteById(id);
+    }
 }
