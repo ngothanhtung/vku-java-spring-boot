@@ -1,10 +1,15 @@
 package com.example.demo.services;
 
-import com.example.demo.entities.Student;
-import com.example.demo.repositories.StudentJpaRepository;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.example.demo.dtos.UpdateStudentRequestDto;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.example.demo.dtos.CreateStudentRequestDto;
+import com.example.demo.dtos.StudentResponseDto;
+import com.example.demo.entities.Student;
+import com.example.demo.repositories.StudentJpaRepository;
 
 @Service
 public class StudentService {
@@ -15,22 +20,46 @@ public class StudentService {
         this.studentJpaRepository = studentJpaRepository;
     }
 
-    public List<Student> getAllCategories() {
-        return this.studentJpaRepository.findAll();
+    // create method convert entity to dto
+    private StudentResponseDto convertToDto(Student student) {
+        return new StudentResponseDto(
+                student.getId(),
+                student.getName(),
+                student.getEmail(),
+                student.getAddress());
     }
 
-    public Student getStudentById(Long id) {
-        return this.studentJpaRepository.findById(id).orElseThrow();
+    public List<StudentResponseDto> getAllCategories() {
+        List<Student> students = this.studentJpaRepository.findAll();
+
+        // Convert to DTOs
+        return students.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
-    public Student createStudent(Student student) {
-        return this.studentJpaRepository.save(student);
+    public StudentResponseDto getStudentById(Long id) {
+        Student student = this.studentJpaRepository.findById(id).orElseThrow();
+        return convertToDto(student);
     }
 
-    public void updateStudent(Long id, Student student) {
+    public StudentResponseDto createStudent(CreateStudentRequestDto createStudentRequestDto) {
+
+        Student student = new Student();
+        student.setName(createStudentRequestDto.getName());
+        student.setEmail(createStudentRequestDto.getEmail());
+        student.setAddress(createStudentRequestDto.getAddress());
+
+        Student createdStudent = this.studentJpaRepository.save(student);
+        return convertToDto(createdStudent);
+    }
+
+    public StudentResponseDto updateStudent(Long id, UpdateStudentRequestDto student) {
         Student existingStudent = this.studentJpaRepository.findById(id).orElseThrow();
         existingStudent.setName(student.getName());
-        this.studentJpaRepository.save(existingStudent);
+        existingStudent.setAddress(student.getAddress());
+        Student updatedStudent =  this.studentJpaRepository.save(existingStudent);
+        return convertToDto(updatedStudent);
     }
 
     public void deleteStudent(Long id) {
