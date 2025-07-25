@@ -12,17 +12,25 @@ import vku.apiservice.tutorials.domain.security.dtos.CreateUserRequestDto;
 import vku.apiservice.tutorials.domain.security.dtos.RoleResponseDto;
 import vku.apiservice.tutorials.domain.security.dtos.UserResponseDto;
 import vku.apiservice.tutorials.domain.security.entities.User;
+
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
+
 import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
 
+
+    public UserService(UserRepository userRepository) {
+
+        this.userRepository = userRepository;
+
+    }
+
     public User createUser(CreateUserRequestDto data) {
         // Check if email already exists
-        if (userRepository.existsByEmail(data.getEmail())) {
+        if (this.userRepository.existsByEmail(data.getEmail())) {
             throw new HttpException("Email already exists: " + data.getEmail(), HttpStatus.CONFLICT);
         }
 

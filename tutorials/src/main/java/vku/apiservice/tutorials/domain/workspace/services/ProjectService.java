@@ -8,12 +8,11 @@ import org.springframework.stereotype.Service;
 
 import vku.apiservice.tutorials.domain.workspace.dtos.CreateProjectRequestDto;
 import vku.apiservice.tutorials.domain.workspace.dtos.ProjectWithTasksResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.ProjectResponseDto;
 import vku.apiservice.tutorials.domain.workspace.dtos.TaskResponseDto;
 import vku.apiservice.tutorials.domain.workspace.dtos.UpdateProjectRequestDto;
 import vku.apiservice.tutorials.domain.workspace.entities.Project;
-import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 import vku.apiservice.tutorials.domain.workspace.repositories.ProjectRepository;
+import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 
 @Service
 public class ProjectService {
@@ -26,7 +25,7 @@ public class ProjectService {
   }
 
   public Project create(CreateProjectRequestDto data) {
-    // Check if project name already exists
+    // Check if the project name already exists
     if (projectRepository.existsByName(data.getName())) {
       throw new HttpException("Project name already exists: " + data.getName(), HttpStatus.CONFLICT);
     }
@@ -66,7 +65,7 @@ public class ProjectService {
     Project project = getProjectById(id);
 
     if (data.hasValidName()) {
-      // Check if the new name already exists (excluding current project)
+      // Check if the new name already exists (excluding the current project)
       if (projectRepository.existsByName(data.getName()) && !project.getName().equals(data.getName())) {
         throw new HttpException("Project name already exists: " + data.getName(), HttpStatus.CONFLICT);
       }
@@ -82,8 +81,7 @@ public class ProjectService {
 
   public void deleteProject(String id) {
     Project project = getProjectById(id);
-    // Note: This will set project_id to null for all related tasks due to the
-    // nullable foreign key
+    // Note: This will set project_id to null for all related tasks due to the nullable foreign key
     projectRepository.delete(project);
   }
 
@@ -107,19 +105,12 @@ public class ProjectService {
 
     // Convert tasks to DTOs if they exist
     if (project.getTasks() != null && !project.getTasks().isEmpty()) {
-      List<TaskResponseDto> taskResponseDtos = project.getTasks().stream()
+      List<TaskResponseDto> taskResponseDto = project.getTasks().stream()
           .map(taskService::convertToDto)
           .collect(Collectors.toList());
-      dto.setTasks(taskResponseDtos);
+      dto.setTasks(taskResponseDto);
     }
 
     return dto;
-  }
-
-  public ProjectResponseDto convertToSummaryDto(Project project) {
-    return new ProjectResponseDto(
-        project.getId(),
-        project.getName(),
-        project.getDescription());
   }
 }

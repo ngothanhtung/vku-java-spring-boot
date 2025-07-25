@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.entities.UserRole;
-import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
+import vku.apiservice.tutorials.infrastructure.persistence.jpa.security.UserJpaRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-  private final UserRepository userRepository;
+  private final UserJpaRepository userRepository;
 
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

@@ -6,10 +6,12 @@ import vku.apiservice.tutorials.domain.security.entities.Role;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.entities.UserRole;
 import vku.apiservice.tutorials.domain.security.entities.UserRoleId;
-import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 import vku.apiservice.tutorials.domain.security.repositories.RoleRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRoleRepository;
+import vku.apiservice.tutorials.infrastructure.persistence.jpa.security.UserRoleJpaRepository;
+import vku.apiservice.tutorials.presentation.exceptions.HttpException;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,11 +27,14 @@ public class RoleService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
 
-    public RoleService(RoleRepository roleRepository, UserRepository userRepository,
-            UserRoleRepository userRoleRepository) {
+
+    public RoleService(RoleRepository roleRepository, UserRepository userRepository, UserRoleRepository userRoleRepository,
+                       UserRoleJpaRepository userRoleJpaRepository
+                       ) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
+
     }
 
     public Role create(CreateRoleRequestDto data) {
@@ -42,7 +47,7 @@ public class RoleService {
     }
 
     public Role update(String id, UpdateRoleRequestDto role) {
-        Role existingRole = roleRepository.findById(id)
+        Role existingRole = this.roleRepository.findById(id)
                 .orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
 
         // Validate that at least one field is provided
@@ -65,20 +70,20 @@ public class RoleService {
     }
 
     public Role findById(String id) {
-        return roleRepository.findById(id)
+        return this.roleRepository.findById(id)
                 .orElseThrow(() -> new HttpException("Role not found with id: " + id, HttpStatus.NOT_FOUND));
     }
 
     public List<Role> getRoles() {
-        return roleRepository.findAll();
+        return this.roleRepository.findAll();
     }
 
     public void addUsersToRole(String roleId, List<String> userIds) {
-        Role role = roleRepository.findById(roleId)
+        Role role = this.roleRepository.findById(roleId)
                 .orElseThrow(() -> new HttpException("Role not found with id: " + roleId, HttpStatus.BAD_REQUEST));
 
         // 2. Check if all userIds exist
-        List<User> users = userRepository.findAllById(userIds);
+        List<User> users = userRepository.findByIdIn(userIds);
         Set<String> foundUserIds = users.stream().map(User::getId).collect(Collectors.toSet());
 
         for (String userId : userIds) {
@@ -97,8 +102,9 @@ public class RoleService {
             userRoles.add(userRole);
         }
 
+
         try {
-            userRoleRepository.saveAll(userRoles);
+            this.userRoleRepository.saveAllUserRoles(userRoles);
         } catch (DataIntegrityViolationException e) {
             throw new HttpException("Database constraint violation: " + e.getMessage(), HttpStatus.CONFLICT);
         } catch (HttpException e) {
@@ -109,16 +115,14 @@ public class RoleService {
 
     public void removeUsersFromRole(String roleId, List<String> userIds) {
         // Check if a role exists
-        // Role role = roleRepository.findById(roleId).orElseThrow(() -> new
-        // RuntimeException("Role not found with id: " + roleId));
-        Role role = roleRepository.findById(roleId).orElse(null);
+        Role role = this.roleRepository.findById(roleId).orElse(null);
 
         if (role == null) {
             throw new RuntimeException("Role not found with id: " + roleId);
         }
 
         // 2. Check if all userIds exist
-        List<User> users = userRepository.findAllById(userIds);
+        List<User> users = userRepository.findByIdIn(userIds);
         Set<String> foundUserIds = users.stream().map(User::getId).collect(Collectors.toSet());
 
         for (String userId : userIds) {
@@ -137,7 +141,7 @@ public class RoleService {
             }
         }
 
-        // 4. Now Safe: delete the UserRole links
+        // 4. Now Safe: delete the UserRoleRepository links
         for (String userId : userIds) {
             UserRoleId userRoleId = new UserRoleId(userId, roleId);
             userRoleRepository.deleteById(userRoleId);

@@ -1,18 +1,15 @@
 package vku.apiservice.tutorials.domain.workspace.repositories;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import vku.apiservice.tutorials.domain.workspace.entities.Project;
 
-@Repository
-public interface ProjectRepository extends JpaRepository<Project, String> {
+import java.util.List;
+import java.util.Optional;
 
-  @Query("SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.tasks")
-  List<Project> findAllProjectsWithTasks();
-
-  boolean existsByName(String name);
+public interface ProjectRepository {
+    Optional<Project> findById(String id);
+    List<Project> findAllProjectsWithTasks();
+    boolean existsByName(String name);
+    Project save(Project project);
+    void delete(Project project);
+    List<Project> findAll();
 }

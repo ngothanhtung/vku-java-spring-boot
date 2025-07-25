@@ -1,28 +1,23 @@
 package vku.apiservice.tutorials.domain.security.repositories;
 
+import vku.apiservice.tutorials.domain.security.entities.User;
+import vku.apiservice.tutorials.domain.security.entities.UserRole;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+public interface UserRepository {
+    boolean existsByEmail(String email);
+    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailWithRoles(String email);
+    Optional<User> findById(String id);
+    boolean existsById(String id);
+    User save(User user);
 
-import vku.apiservice.tutorials.domain.security.entities.User;
-
-@Repository
-public interface UserRepository extends JpaRepository<User, String> {
-    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.userRoles ur LEFT JOIN FETCH ur.role r")
+    void deleteById(String id);
     List<User> findAllUsersWithRoles();
 
-    @Query("SELECT u FROM User u JOIN FETCH u.userRoles ur JOIN FETCH ur.role WHERE u.id = :userId")
-    User findByIdWithRoles(String userId);
+    List<User> findByIdIn(List<String> ids);
 
-    // Check if email already exists
-    boolean existsByEmail(String email);
-
-    // Find user by email
-    Optional<User> findByEmail(String email);
-
-    @Query("SELECT u FROM User u JOIN FETCH u.userRoles ur JOIN FETCH ur.role WHERE u.email = :email")
-    Optional<User> findByEmailWithRoles(String email);
 }

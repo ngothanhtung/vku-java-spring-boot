@@ -20,7 +20,7 @@ public class CreateRoleRequestDto {
 
     @NotBlank(message = "Code is required")
     @Size(min = 2, max = 50, message = "Code must be between 2 and 50 characters")
-    @Pattern(regexp = "^[A-Z][A-Z0-9_]*$", message = "Code must start with uppercase letter and contain only uppercase letters, numbers, and underscores")
+    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Code must contain only alphanumeric characters and underscores")
     private String code;
 
     @NotBlank(message = "Name is required")

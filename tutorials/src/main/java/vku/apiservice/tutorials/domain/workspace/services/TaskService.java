@@ -6,16 +6,17 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
 import vku.apiservice.tutorials.domain.workspace.dtos.*;
 import vku.apiservice.tutorials.domain.workspace.entities.Project;
 import vku.apiservice.tutorials.domain.workspace.entities.Task;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.workspace.enums.TaskPriority;
 import vku.apiservice.tutorials.domain.workspace.enums.TaskStatus;
-import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 import vku.apiservice.tutorials.domain.workspace.repositories.ProjectRepository;
 import vku.apiservice.tutorials.domain.workspace.repositories.TaskRepository;
-import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
+import vku.apiservice.tutorials.presentation.exceptions.HttpException;
+import vku.apiservice.tutorials.infrastructure.persistence.jpa.security.UserJpaRepository;
 
 @Service
 public class TaskService {
@@ -23,8 +24,8 @@ public class TaskService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository,
-            ProjectRepository projectRepository) {
+    public TaskService(TaskRepository taskRepository, UserJpaRepository userRepository,
+                       ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
@@ -156,11 +157,11 @@ public class TaskService {
     public void deleteTask(String id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
-        taskRepository.delete(task);
+        this.taskRepository.delete(task);
     }
 
     public Task updateTask(String id, CreateTaskRequestDto data) {
-        Task existingTask = taskRepository.findById(id)
+        Task existingTask = this.taskRepository.findById(id)
                 .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
 
         if (data.getTitle() != null) {
@@ -195,10 +196,10 @@ public class TaskService {
             throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
         }
 
-        Task existingTask = taskRepository.findById(id)
+        Task existingTask = this.taskRepository.findById(id)
                 .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
 
-        // Update title if provided and valid
+        // Update the title if provided and valid
         if (data.hasValidTitle()) {
             existingTask.setTitle(data.getTitle().trim());
         }
@@ -226,21 +227,21 @@ public class TaskService {
             existingTask.setAssignee(user);
         }
 
-        // Update project if provided
+        // Update the project if provided
         if (data.getProjectId() != null) {
             if (data.hasValidProjectId()) {
-                // Assign to project
+                // Assign to a project
                 Project project = projectRepository.findById(data.getProjectId())
                         .orElseThrow(() -> new HttpException("Project not found with id: " + data.getProjectId(),
                                 HttpStatus.BAD_REQUEST));
                 existingTask.setProject(project);
             } else {
-                // Remove from project (empty string or just spaces)
+                // Remove from the project (empty string or just spaces)
                 existingTask.setProject(null);
             }
         }
 
-        return taskRepository.save(existingTask);
+        return this.taskRepository.save(existingTask);
     }
 
     /**
@@ -249,12 +250,9 @@ public class TaskService {
      */
     public boolean isTaskOwner(String assigneeId, String currentUserEmail) {
         Optional<User> currentUser = userRepository.findByEmail(currentUserEmail);
-        if (!currentUser.isPresent()) {
-            return false;
-        }
+        return currentUser.map(user -> user.getId().equals(assigneeId)).orElse(false);
 
         // Check if the current user is the assignee
-        return currentUser.get().getId().equals(assigneeId);
     }
 
     /**
@@ -263,17 +261,14 @@ public class TaskService {
      */
     public boolean isTaskOwnerById(String taskId, String currentUserEmail) {
         Optional<User> currentUser = userRepository.findByEmail(currentUserEmail);
-        if (!currentUser.isPresent()) {
+        if (currentUser.isEmpty()) {
             return false;
         }
 
-        Optional<Task> task = taskRepository.findById(taskId);
-        if (!task.isPresent()) {
-            return false;
-        }
+        Optional<Task> task = this.taskRepository.findById(taskId);
+        return task.filter(value -> value.getAssignee() != null &&
+                value.getAssignee().getId().equals(currentUser.get().getId())).isPresent();
 
         // Check if the current user is the assignee of this task
-        return task.get().getAssignee() != null &&
-                task.get().getAssignee().getId().equals(currentUser.get().getId());
     }
 }
