@@ -27,6 +27,7 @@ public class StudentService {
                 student.getName(),
                 student.getEmail(),
                 student.getAddress());
+
     }
 
     public List<StudentResponseDto> getAllCategories() {
@@ -49,6 +50,7 @@ public class StudentService {
         student.setName(createStudentRequestDto.getName());
         student.setEmail(createStudentRequestDto.getEmail());
         student.setAddress(createStudentRequestDto.getAddress());
+        student.setPassword(createStudentRequestDto.getPassword());
 
         Student createdStudent = this.studentJpaRepository.save(student);
         return convertToDto(createdStudent);

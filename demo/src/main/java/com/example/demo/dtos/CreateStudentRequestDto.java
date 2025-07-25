@@ -21,4 +21,7 @@ public class CreateStudentRequestDto {
 
 
     private String address;
+
+    @NotBlank(message = "Password is required")
+    private String password;
 }

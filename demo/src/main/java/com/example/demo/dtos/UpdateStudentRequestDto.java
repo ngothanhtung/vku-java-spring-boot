@@ -11,14 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateStudentRequestDto {
-
-
     private String name;
-
 
     @Email(message = "Email is invalid")
     private String email;
 
-
     private String address;
+
+    private String password;
 }
