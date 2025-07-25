@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import vku.apiservice.tutorials.domain.security.dtos.CreateRoleRequestDto;
 import vku.apiservice.tutorials.domain.security.dtos.UpdateRoleRequestDto;
@@ -13,6 +15,7 @@ import vku.apiservice.tutorials.domain.security.entities.Role;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.entities.UserRole;
 import vku.apiservice.tutorials.domain.security.entities.UserRoleId;
+import vku.apiservice.tutorials.domain.security.events.RoleAssignedEvent;
 import vku.apiservice.tutorials.domain.security.repositories.RoleRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
 import vku.apiservice.tutorials.domain.security.repositories.UserRoleRepository;
@@ -24,12 +27,16 @@ public class RoleService {
 	private final UserRepository userRepository;
 	private final UserRoleRepository userRoleRepository;
 
+	private final ApplicationEventPublisher eventPublisher;
+
 	public RoleService(RoleRepository roleRepository,
 			UserRepository userRepository,
-			UserRoleRepository userRoleRepository) {
+			UserRoleRepository userRoleRepository,
+			ApplicationEventPublisher eventPublisher) {
 		this.roleRepository = roleRepository;
 		this.userRepository = userRepository;
 		this.userRoleRepository = userRoleRepository;
+		this.eventPublisher = eventPublisher;
 	}
 
 	public Role create(CreateRoleRequestDto data) {
@@ -79,6 +86,7 @@ public class RoleService {
 	// If the role does not exist, throw an exception
 	// If the user is already assigned to the role, do not add them again
 	// If the user is not assigned to the role, do not remove them
+	@Transactional
 	public void addUsersToRole(String roleId, List<String> userIds) {
 
 		// Check if all userIds exist
@@ -111,6 +119,9 @@ public class RoleService {
 			userRole.setUser(user);
 			userRole.setRole(role);
 			userRoleRepository.save(userRole);
+
+			// Phát sự kiện RoleAssignedEvent
+			eventPublisher.publishEvent(new RoleAssignedEvent(user.getId(), roleId));
 		}
 	}
 
