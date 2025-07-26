@@ -6,3 +6,4 @@ INSERT INTO users (id, name, email, password, created_at, updated_at) VALUES ('e
 
 INSERT INTO users_roles (user_id, role_id, enabled) VALUES ('ebcca554-68ae-11f0-ba23-facf417d034b', 'd238e4ee-68ae-11f0-ba23-facf417d034b', true) ON DUPLICATE KEY UPDATE user_id = 'ebcca554-68ae-11f0-ba23-facf417d034b', role_id = 'd238e4ee-68ae-11f0-ba23-facf417d034b', enabled = true;
 INSERT INTO users_roles (user_id, role_id, enabled) VALUES ('ebcca554-68ae-11f0-ba23-facf417d034b', 'd238e4ee-68ae-11f0-ba23-facf417d034c', true) ON DUPLICATE KEY UPDATE user_id = 'ebcca554-68ae-11f0-ba23-facf417d034b', role_id = 'd238e4ee-68ae-11f0-ba23-facf417d034c', enabled = true;
+INSERT INTO users_roles (user_id, role_id, enabled) VALUES ('ebcca554-68ae-11f0-ba23-facf417d034b', 'd238e4ee-68ae-11f0-ba23-facf417d034d', true) ON DUPLICATE KEY UPDATE user_id = 'ebcca554-68ae-11f0-ba23-facf417d034b', role_id = 'd238e4ee-68ae-11f0-ba23-facf417d034d', enabled = true;

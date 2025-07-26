@@ -1,5 +1,6 @@
 package vku.apiservice.tutorials.domain.security.dtos;
 
+import java.io.Serializable;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -15,7 +16,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDto {
+public class UserResponseDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String id;
     private String name;
     private String email;

@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * DTO for representing user information in API responses.
  * Contains user basic information and associated roles.
@@ -11,7 +13,9 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @NoArgsConstructor
-public class RoleResponseDto {
+public class RoleResponseDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private String id;
     private String code;
     private String name;
