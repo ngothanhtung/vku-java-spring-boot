@@ -3,15 +3,15 @@ package com.example.demo.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.demo.dtos.UpdateStudentRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.CreateStudentRequestDto;
-import com.example.demo.dtos.StudentResponseDto;
 import com.example.demo.dtos.PaginatedStudentResponseDto;
+import com.example.demo.dtos.StudentResponseDto;
+import com.example.demo.dtos.UpdateStudentRequestDto;
 import com.example.demo.entities.Student;
 import com.example.demo.repositories.StudentJpaRepository;
 
@@ -47,15 +47,15 @@ public class StudentService {
     public PaginatedStudentResponseDto getAllStudentsPaginated(int page, int size) {
         // Tạo Pageable object với page và size
         Pageable pageable = PageRequest.of(page, size);
-        
+
         // Lấy dữ liệu phân trang từ repository
         Page<Student> studentPage = this.studentJpaRepository.findAll(pageable);
-        
+
         // Chuyển đổi Page<Student> thành List<StudentResponseDto>
         List<StudentResponseDto> studentDtos = studentPage.getContent().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-        
+
         // Tạo response DTO với thông tin phân trang
         return PaginatedStudentResponseDto.builder()
                 .data(studentDtos)
@@ -89,7 +89,7 @@ public class StudentService {
         Student existingStudent = this.studentJpaRepository.findById(id).orElseThrow();
         existingStudent.setName(student.getName());
         existingStudent.setAddress(student.getAddress());
-        Student updatedStudent =  this.studentJpaRepository.save(existingStudent);
+        Student updatedStudent = this.studentJpaRepository.save(existingStudent);
         return convertToDto(updatedStudent);
     }
 
