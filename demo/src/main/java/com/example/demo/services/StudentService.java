@@ -3,15 +3,12 @@ package com.example.demo.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.demo.dtos.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dtos.CreateStudentRequestDto;
-import com.example.demo.dtos.PaginatedStudentResponseDto;
-import com.example.demo.dtos.StudentResponseDto;
-import com.example.demo.dtos.UpdateStudentRequestDto;
 import com.example.demo.entities.Student;
 import com.example.demo.repositories.StudentJpaRepository;
 
@@ -26,16 +23,23 @@ public class StudentService {
 
     // create method convert entity to dto
     private StudentResponseDto convertToDto(Student student) {
-        return new StudentResponseDto(
-                student.getId(),
-                student.getName(),
-                student.getEmail(),
-                student.getAddress());
-
+        StudentResponseDto studentDto = new StudentResponseDto();
+        studentDto.setId(student.getId());
+        studentDto.setName(student.getName());
+        studentDto.setEmail(student.getEmail());
+        studentDto.setAddress(student.getAddress());
+        if (student.getDepartment() != null) {
+            DepartmentResponseDto departmentDto = new DepartmentResponseDto();
+            departmentDto.setId(student.getDepartment().getId());
+            departmentDto.setName(student.getDepartment().getName());
+            studentDto.setDepartment(departmentDto);
+        }
+        return studentDto;
     }
 
     public List<StudentResponseDto> getAllStudent() {
-        List<Student> students = this.studentJpaRepository.findAll();
+        List<Student> students = this.studentJpaRepository.getAllStudentsWithDepartment();
+
 
         // Convert to DTOs
         return students.stream()

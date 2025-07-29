@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.entities.Student;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +19,8 @@ import com.example.demo.services.StudentService;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 @RestController()
 @RequestMapping("/api/students")
 public class StudentController {
@@ -27,12 +30,12 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    // @GetMapping()
-    // public List<StudentResponseDto> getAllStudent() {
-    // return this.studentService.getAllStudent();
-    // }
+     @GetMapping()
+     public List<StudentResponseDto> getAllStudent() {
+        return this.studentService.getAllStudent();
+     }
 
-    @GetMapping("")
+    @GetMapping("/paging")
     public PaginatedStudentResponseDto getAllStudentsPaginated(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size) {

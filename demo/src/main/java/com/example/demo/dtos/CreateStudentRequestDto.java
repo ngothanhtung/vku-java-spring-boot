@@ -24,4 +24,6 @@ public class CreateStudentRequestDto {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    private Long departmentId;
 }

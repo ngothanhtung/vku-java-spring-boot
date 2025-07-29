@@ -6,17 +6,21 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
-import vku.apiservice.tutorials.domain.workspace.dtos.*;
+import vku.apiservice.tutorials.domain.workspace.dtos.AssigneeResponseDto;
+import vku.apiservice.tutorials.domain.workspace.dtos.CreateTaskRequestDto;
+import vku.apiservice.tutorials.domain.workspace.dtos.ProjectResponseDto;
+import vku.apiservice.tutorials.domain.workspace.dtos.TaskResponseDto;
+import vku.apiservice.tutorials.domain.workspace.dtos.UpdateTaskRequestDto;
 import vku.apiservice.tutorials.domain.workspace.entities.Project;
 import vku.apiservice.tutorials.domain.workspace.entities.Task;
-import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.workspace.enums.TaskPriority;
 import vku.apiservice.tutorials.domain.workspace.enums.TaskStatus;
 import vku.apiservice.tutorials.domain.workspace.repositories.ProjectRepository;
 import vku.apiservice.tutorials.domain.workspace.repositories.TaskRepository;
-import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 import vku.apiservice.tutorials.infrastructure.persistence.jpa.security.UserJpaRepository;
+import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 
 @Service
 public class TaskService {
@@ -25,7 +29,7 @@ public class TaskService {
     private final ProjectRepository projectRepository;
 
     public TaskService(TaskRepository taskRepository, UserJpaRepository userRepository,
-                       ProjectRepository projectRepository) {
+            ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;

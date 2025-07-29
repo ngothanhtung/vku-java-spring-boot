@@ -5,11 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+
 @NoArgsConstructor
-public class StudentResponseDto {
+public class DepartmentResponseDto {
     private Long id;
     private String name;
-    private String email;
-    private String address;
-    private DepartmentResponseDto department;
 }
