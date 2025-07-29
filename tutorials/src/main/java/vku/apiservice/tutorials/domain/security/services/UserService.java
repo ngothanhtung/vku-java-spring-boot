@@ -40,7 +40,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    @Cacheable(value = "users", key = "'all'")
+//    @Cacheable(value = "users", key = "'all'")
     public List<UserResponseDto> getUsers() {
         List<User> users = userRepository.findAllUsersWithRoles();
 

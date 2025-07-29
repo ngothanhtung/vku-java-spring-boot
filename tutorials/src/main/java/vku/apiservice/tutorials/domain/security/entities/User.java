@@ -24,7 +24,7 @@ import vku.apiservice.tutorials.domain.workspace.entities.Task;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -34,16 +34,11 @@ public class User extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String email;
 
-    // Exclude password from JSON serialization
-    @JsonIgnore
     private String password;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<UserRole> userRoles;
 
     @OneToMany(mappedBy = "assignee", fetch = FetchType.LAZY)
-    @JsonIgnore
     private List<Task> tasks;
-
 }

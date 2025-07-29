@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     jwt = authHeader.substring(7);
 
     try {
+
       // Check if it's a refresh token being used for API access (should be rejected)
       String tokenType = jwtService.extractTokenType(jwt);
       if ("refresh".equals(tokenType)) {

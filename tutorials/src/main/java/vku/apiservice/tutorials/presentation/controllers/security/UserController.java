@@ -1,13 +1,13 @@
 package vku.apiservice.tutorials.presentation.controllers.security;
 
-import vku.apiservice.tutorials.infrastructure.config.PreAuthorizeUtil;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import vku.apiservice.tutorials.domain.security.dtos.CreateUserRequestDto;
 import vku.apiservice.tutorials.domain.security.dtos.UserResponseDto;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.services.UserService;
-import jakarta.validation.Valid;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import vku.apiservice.tutorials.infrastructure.config.PreAuthorizeUtil;
 
 @RestController
 @RequestMapping("/api/security/users")

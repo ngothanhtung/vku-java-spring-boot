@@ -23,14 +23,12 @@ public class UserRole {
     @EmbeddedId
     private UserRoleId id = new UserRoleId();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("userId") // Maps to embedded id userId
-    @JsonIgnore
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("roleId") // Maps to embedded id roleId
-    @JsonIgnore
     private Role role;
 
     @Column(nullable = false)

@@ -24,6 +24,5 @@ public class Role extends BaseEntity {
     private String description;
 
     @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
-    @JsonIgnore
     private List<UserRole> userRoles;
 }
