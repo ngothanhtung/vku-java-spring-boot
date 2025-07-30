@@ -10,14 +10,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dtos.CourseResponseDto;
 import com.example.demo.dtos.CreateStudentRequestDto;
 import com.example.demo.dtos.DepartmentResponseDto;
 import com.example.demo.dtos.PaginatedStudentResponseDto;
 import com.example.demo.dtos.StudentResponseDto;
 import com.example.demo.dtos.UpdateStudentRequestDto;
 import com.example.demo.entities.Student;
+import com.example.demo.enums.StudentStatus;
 import com.example.demo.repositories.StudentJpaRepository;
+import com.example.demo.repositories.StudentProjection;
 
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -45,12 +49,23 @@ public class StudentService {
             departmentDto.setName(student.getDepartment().getName());
             studentDto.setDepartment(departmentDto);
         }
+        if (student.getCourses() != null) {
+            List<CourseResponseDto> courseDtos = student.getCourses().stream()
+                    .map(course -> {
+                        CourseResponseDto courseDto = new CourseResponseDto();
+                        courseDto.setId(course.getId());
+                        courseDto.setName(course.getName());
+                        return courseDto;
+                    })
+                    .collect(Collectors.toList());
+            studentDto.setCourses(courseDtos);
+        }
         return studentDto;
     }
 
     @Transactional(readOnly = true)
-    public List<StudentResponseDto> getAllStudent() {
-        List<Student> students = this.studentJpaRepository.getAllStudentsWithDepartment();
+    public List<StudentResponseDto> getAllStudents() {
+        List<Student> students = this.studentJpaRepository.getAllStudents();
 
         // Convert to DTOs
         return students.stream()
@@ -124,9 +139,13 @@ public class StudentService {
     }
 
     public List<StudentResponseDto> findAvailableStudents() {
-        em.unwrap(Session.class).enableFilter("AvailableStudents").setParameter("deleted", false);
-        List<Student> student = em.createQuery("FROM Student", Student.class).getResultList();
-        em.unwrap(Session.class).disableFilter("AvailableStudents");
+        Session session = em.unwrap(Session.class);
+        session.enableFilter("softDeleteFilter").setParameter("deleted", false);
+        List<Student> student = em
+                .createQuery("SELECT s FROM Student s LEFT JOIN FETCH s.department LEFT JOIN FETCH s.courses",
+                        Student.class)
+                .getResultList();
+        session.disableFilter("softDeleteFilter");
 
         return student.stream()
                 .map(this::convertToDto)
@@ -138,5 +157,52 @@ public class StudentService {
         Student student = this.studentJpaRepository.findById(id).orElseThrow();
         student.setDeleted(true);
         this.studentJpaRepository.save(student);
+    }
+
+    public List<StudentResponseDto> findByNotDeleted() {
+        List<Student> students = this.studentJpaRepository.findByDeleted(false);
+
+        // Convert to DTOs
+        return students.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<StudentResponseDto> findByStatus(StudentStatus status) {
+
+        List<Student> students = this.studentJpaRepository.findByStatus(status);
+
+        // Convert to DTOs
+        return students.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<StudentResponseDto> findByDepartmentId(Long departmentId) {
+        // Using EntityManager to fetch students by department ID
+        EntityGraph<?> graph = em.createEntityGraph(Student.class);
+        graph.addAttributeNodes("department", "courses");
+        List<Student> students = em
+                .createQuery("SELECT s FROM Student s WHERE s.department.id = :departmentId", Student.class)
+                .setHint("javax.persistence.loadgraph", graph) // Sử dụng Entity Graph
+                .setParameter("departmentId", departmentId)
+                .getResultList();
+
+        // Convert to DTOs
+        return students.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    // public List<StudentProjection> findByNameContainingIgnoreCase(String name) {
+    // return this.studentJpaRepository.findByNameContainingIgnoreCase(name);
+    // }
+
+    public List<StudentProjection> findByNameContainingIgnoreCase(String name) {
+        return this.studentJpaRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    public List<StudentProjection> searchByEmailContainingIgnoreCase(String email) {
+        return this.studentJpaRepository.searchByEmailContainingIgnoreCase(email);
     }
 }

@@ -1,7 +1,8 @@
 package com.example.demo.services;
 
-import com.example.demo.entities.Student;
 import org.springframework.data.jpa.domain.Specification;
+
+import com.example.demo.entities.Student;
 
 public class StudentSpecifications {
     public static Specification<Student> hasName(String name) {

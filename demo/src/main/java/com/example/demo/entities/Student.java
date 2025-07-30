@@ -1,26 +1,52 @@
 package com.example.demo.entities;
 
-import com.example.demo.enums.StudentStatus;
-import com.example.demo.utils.StudentStatusConverter;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.List;
+
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
 
-import java.util.List;
+import com.example.demo.enums.StudentStatus;
+import com.example.demo.utils.StudentStatusConverter;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@NamedEntityGraph(name = "Student.WithDepartmentAndCourses", attributeNodes = {
+        @NamedAttributeNode("courses"),
+        @NamedAttributeNode("department")
+})
+@NamedEntityGraph(name = "Student.WithCourses", attributeNodes = {
+        @NamedAttributeNode("courses")
+})
+@NamedEntityGraph(name = "Student.WithDepartment", attributeNodes = {
+        @NamedAttributeNode("department")
+})
 @Table(name = "students")
-@FilterDef(name = "AvailableStudents", parameters = @ParamDef(name = "deleted", type = Boolean.class))
-@Filter(name = "AvailableStudents", condition = "deleted = :deleted")
+@FilterDef(name = "softDeleteFilter", parameters = @ParamDef(name = "deleted", type = Boolean.class))
+@Filter(name = "softDeleteFilter", condition = "deleted = :deleted")
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

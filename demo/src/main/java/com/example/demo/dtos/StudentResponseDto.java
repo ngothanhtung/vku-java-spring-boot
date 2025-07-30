@@ -1,7 +1,9 @@
 package com.example.demo.dtos;
 
+import java.util.List;
+
 import com.example.demo.enums.StudentStatus;
-import lombok.Builder;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,4 +16,5 @@ public class StudentResponseDto {
     private String address;
     private StudentStatus status;
     private DepartmentResponseDto department;
+    private List<CourseResponseDto> courses;
 }

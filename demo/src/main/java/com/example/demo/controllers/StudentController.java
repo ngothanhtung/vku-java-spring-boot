@@ -16,6 +16,8 @@ import com.example.demo.dtos.CreateStudentRequestDto;
 import com.example.demo.dtos.PaginatedStudentResponseDto;
 import com.example.demo.dtos.StudentResponseDto;
 import com.example.demo.dtos.UpdateStudentRequestDto;
+import com.example.demo.enums.StudentStatus;
+import com.example.demo.repositories.StudentProjection;
 import com.example.demo.services.StudentService;
 
 import jakarta.validation.Valid;
@@ -30,8 +32,8 @@ public class StudentController {
     }
 
     @GetMapping()
-    public List<StudentResponseDto> getAllStudent() {
-        return this.studentService.getAllStudent();
+    public List<StudentResponseDto> getAllStudents() {
+        return this.studentService.getAllStudents();
     }
 
     @GetMapping("/paging")
@@ -68,8 +70,30 @@ public class StudentController {
         this.studentService.softDeleteStudent(id);
     }
 
-    @GetMapping("/available-only")
-    public List<StudentResponseDto> findAvailableStudents() {
-        return this.studentService.findAvailableStudents();
+    @GetMapping("/get-all/deleted/false")
+    public List<StudentResponseDto> findByNotDeleted() {
+        return this.studentService.findByNotDeleted();
+    }
+
+    @GetMapping("/get-all/status")
+    public List<StudentResponseDto> findByStatus(@RequestParam("status") StudentStatus status) {
+
+        return this.studentService.findByStatus(status);
+    }
+
+    @GetMapping("/get-all/department/{id}")
+    public List<StudentResponseDto> findByDepartment(@PathVariable("id") Long departmentId) {
+
+        return this.studentService.findByDepartmentId(departmentId);
+    }
+
+    @GetMapping("/get-all/name")
+    public List<StudentProjection> findByName(@RequestParam("name") String name) {
+        return this.studentService.findByNameContainingIgnoreCase(name);
+    }
+
+    @GetMapping("/get-all/email")
+    public List<StudentProjection> findByEmail(@RequestParam("email") String email) {
+        return this.studentService.searchByEmailContainingIgnoreCase(email);
     }
 }
