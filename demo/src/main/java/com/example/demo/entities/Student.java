@@ -32,8 +32,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "students")
-@FilterDef(name = "activeOnly", parameters = @ParamDef(name = "active", type = Boolean.class))
-@Filter(name = "activeOnly", condition = "deleted = :active")
+@FilterDef(name = "AvailableStudents", parameters = @ParamDef(name = "deleted", type = Boolean.class))
+@Filter(name = "AvailableStudents", condition = "deleted = :deleted")
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

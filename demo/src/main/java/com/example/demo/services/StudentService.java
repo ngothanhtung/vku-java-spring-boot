@@ -3,18 +3,23 @@ package com.example.demo.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.demo.dtos.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dtos.CreateStudentRequestDto;
+import com.example.demo.dtos.DepartmentResponseDto;
+import com.example.demo.dtos.PaginatedStudentResponseDto;
+import com.example.demo.dtos.StudentResponseDto;
+import com.example.demo.dtos.UpdateStudentRequestDto;
 import com.example.demo.entities.Student;
 import com.example.demo.repositories.StudentJpaRepository;
-import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 public class StudentService {
@@ -42,10 +47,10 @@ public class StudentService {
         }
         return studentDto;
     }
+
     @Transactional(readOnly = true)
     public List<StudentResponseDto> getAllStudent() {
         List<Student> students = this.studentJpaRepository.getAllStudentsWithDepartment();
-
 
         // Convert to DTOs
         return students.stream()
@@ -107,18 +112,31 @@ public class StudentService {
         this.studentJpaRepository.findById(id).orElseThrow();
         this.studentJpaRepository.deleteById(id);
     }
+
     // JPA Specifications for Dynamic Queries
     public List<Student> findByName(String name) {
         return this.studentJpaRepository.findAll(StudentSpecifications.hasName(name));
     }
 
     @Transactional
-    public int updateStudentStatus(Long deptId, String status) {
-        return this.studentJpaRepository.updateStudentStatus(status, deptId);
+    public int updateStudentStatus(Long departmentId, String status) {
+        return this.studentJpaRepository.updateStudentStatus(status, departmentId);
     }
 
-    public List<Student> findActiveStudents() {
-        em.unwrap(Session.class).enableFilter("activeOnly").setParameter("active", false);
-        return em.createQuery("FROM Student", Student.class).getResultList();
+    public List<StudentResponseDto> findAvailableStudents() {
+        em.unwrap(Session.class).enableFilter("AvailableStudents").setParameter("deleted", false);
+        List<Student> student = em.createQuery("FROM Student", Student.class).getResultList();
+        em.unwrap(Session.class).disableFilter("AvailableStudents");
+
+        return student.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void softDeleteStudent(Long id) {
+        Student student = this.studentJpaRepository.findById(id).orElseThrow();
+        student.setDeleted(true);
+        this.studentJpaRepository.save(student);
     }
 }
