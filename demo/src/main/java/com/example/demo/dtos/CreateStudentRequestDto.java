@@ -19,11 +19,12 @@ public class CreateStudentRequestDto {
     @Email(message = "Email is invalid")
     private String email;
 
-
     private String address;
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    private String status;
 
     private Long departmentId;
 }

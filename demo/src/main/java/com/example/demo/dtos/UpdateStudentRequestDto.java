@@ -19,4 +19,8 @@ public class UpdateStudentRequestDto {
     private String address;
 
     private String password;
+
+    private String status;
+
+    private Long departmentId;
 }

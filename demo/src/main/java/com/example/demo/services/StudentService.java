@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.example.demo.dtos.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.hibernate.Session;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,10 +14,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.entities.Student;
 import com.example.demo.repositories.StudentJpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentService {
-
+    @PersistenceContext
+    private EntityManager em;
     private final StudentJpaRepository studentJpaRepository;
 
     public StudentService(StudentJpaRepository studentJpaRepository) {
@@ -28,6 +33,7 @@ public class StudentService {
         studentDto.setName(student.getName());
         studentDto.setEmail(student.getEmail());
         studentDto.setAddress(student.getAddress());
+        studentDto.setStatus(student.getStatus());
         if (student.getDepartment() != null) {
             DepartmentResponseDto departmentDto = new DepartmentResponseDto();
             departmentDto.setId(student.getDepartment().getId());
@@ -36,7 +42,7 @@ public class StudentService {
         }
         return studentDto;
     }
-
+    @Transactional(readOnly = true)
     public List<StudentResponseDto> getAllStudent() {
         List<Student> students = this.studentJpaRepository.getAllStudentsWithDepartment();
 
@@ -100,5 +106,19 @@ public class StudentService {
     public void deleteStudent(Long id) {
         this.studentJpaRepository.findById(id).orElseThrow();
         this.studentJpaRepository.deleteById(id);
+    }
+    // JPA Specifications for Dynamic Queries
+    public List<Student> findByName(String name) {
+        return this.studentJpaRepository.findAll(StudentSpecifications.hasName(name));
+    }
+
+    @Transactional
+    public int updateStudentStatus(Long deptId, String status) {
+        return this.studentJpaRepository.updateStudentStatus(status, deptId);
+    }
+
+    public List<Student> findActiveStudents() {
+        em.unwrap(Session.class).enableFilter("activeOnly").setParameter("active", false);
+        return em.createQuery("FROM Student", Student.class).getResultList();
     }
 }
