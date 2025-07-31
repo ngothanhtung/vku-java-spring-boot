@@ -10,7 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.demo.services.JwtAuthenticationFilter;
+import com.example.demo.filters.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 

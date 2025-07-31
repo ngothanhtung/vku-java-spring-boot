@@ -1,5 +1,6 @@
-package com.example.demo.services;
+package com.example.demo.filters;
 
+import com.example.demo.services.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
