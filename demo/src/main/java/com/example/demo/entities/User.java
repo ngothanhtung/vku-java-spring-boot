@@ -11,7 +11,7 @@ import lombok.Setter;
 @Inheritance(strategy = InheritanceType.JOINED)
 // @DiscriminatorColumn(name = "user_type", discriminatorType =
 // DiscriminatorType.STRING)
-public abstract class AuthUser {
+public abstract class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     // Dùng cho InheritanceType.TABLE_PER_CLASS
