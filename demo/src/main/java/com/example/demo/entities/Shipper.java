@@ -10,9 +10,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "employees")
-public class Employee extends AuthUser {
+@Table(name = "shippers")
+public class Shipper extends AuthUser {
+  private String bikeNumber;
+  private String vehicleType;
 
-    private String name;
-    private String address;
 }

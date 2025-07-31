@@ -49,4 +49,7 @@ public interface StudentJpaRepository extends JpaRepository<Student, Long>, JpaS
 
     // Other query methods
     List<StudentProjection> searchByEmailContainingIgnoreCase(String email);
+
+    @Query(value = "SELECT s.id, s.name, s.email FROM students s", nativeQuery = true)
+    List<Student> getAllStudents1();
 }

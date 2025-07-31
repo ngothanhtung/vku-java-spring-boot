@@ -71,8 +71,8 @@ public class StudentController {
     }
 
     @GetMapping("/get-all/deleted/false")
-    public List<StudentResponseDto> findByNotDeleted() {
-        return this.studentService.findByNotDeleted();
+    public List<StudentResponseDto> findAvailableStudents() {
+        return this.studentService.findAvailableStudents();
     }
 
     @GetMapping("/get-all/status")
