@@ -1,10 +1,6 @@
 package com.example.demo.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,12 +8,15 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "Users")
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.JOINED)
 // @DiscriminatorColumn(name = "user_type", discriminatorType =
 // DiscriminatorType.STRING)
 public abstract class AuthUser {
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // Dùng cho InheritanceType.TABLE_PER_CLASS
+    // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_sequence")
+    // @SequenceGenerator(name = "user_sequence", sequenceName = "user_sequence", allocationSize = 1)
     private Long id;
     private String username;
     private String password;

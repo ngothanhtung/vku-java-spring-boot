@@ -9,6 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+// Dùng cho InheritanceType.TABLE_PER_CLASS hoặc JOINED
 @Entity
 @Table(name = "employees")
 public class Employee extends AuthUser {
