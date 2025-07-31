@@ -1,18 +1,19 @@
 package vku.apiservice.tutorials.infrastructure.config;
 
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.entities.UserRole;
 import vku.apiservice.tutorials.infrastructure.persistence.jpa.security.UserJpaRepository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,27 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // Add user roles as authorities with both ROLE_ prefix and without prefix for
     // flexibility
+
+    /*
+     * Bạn cần cả hai SimpleGrantedAuthority (một với tiền tố ROLE_, một không có
+     * tiền tố) vì:
+     * 
+     * Spring Security mặc định: Spring Security yêu cầu quyền (authority) dùng cho
+     * phân quyền URL hoặc annotation như @Secured, @RolesAllowed phải có tiền tố
+     * ROLE_. Ví dụ: ROLE_ADMIN.
+     * 
+     * @PreAuthorize hoặc custom check: Khi dùng annotation
+     * như @PreAuthorize("hasAuthority('ADMIN')") hoặc bạn muốn kiểm tra quyền mà
+     * không cần tiền tố, bạn sẽ cần authority không có ROLE_.
+     * 
+     * Tóm lại:
+     * 
+     * ROLE_ADMIN dùng cho các chỗ Spring Security mặc định yêu cầu.
+     * ADMIN dùng cho các chỗ bạn tự định nghĩa hoặc annotation
+     * như @PreAuthorize("hasAuthority('ADMIN')").
+     * Việc thêm cả hai giúp linh hoạt, không bị lỗi khi dùng các cách kiểm tra
+     * quyền khác nhau trong dự án.
+     */
     if (user.getUserRoles() != null) {
       for (UserRole userRole : user.getUserRoles()) {
         if (userRole.isEnabled()) { // Only include enabled roles
