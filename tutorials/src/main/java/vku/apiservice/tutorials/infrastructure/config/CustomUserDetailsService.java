@@ -43,13 +43,6 @@ public class CustomUserDetailsService implements UserDetailsService {
      * như @PreAuthorize("hasAuthority('ADMIN')") hoặc bạn muốn kiểm tra quyền mà
      * không cần tiền tố, bạn sẽ cần authority không có ROLE_.
      * 
-     * Tóm lại:
-     * 
-     * ROLE_ADMIN dùng cho các chỗ Spring Security mặc định yêu cầu.
-     * ADMIN dùng cho các chỗ bạn tự định nghĩa hoặc annotation
-     * như @PreAuthorize("hasAuthority('ADMIN')").
-     * Việc thêm cả hai giúp linh hoạt, không bị lỗi khi dùng các cách kiểm tra
-     * quyền khác nhau trong dự án.
      */
     if (user.getUserRoles() != null) {
       for (UserRole userRole : user.getUserRoles()) {
