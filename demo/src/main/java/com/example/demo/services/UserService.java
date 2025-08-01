@@ -1,5 +1,7 @@
 package com.example.demo.services;
 
+import com.example.demo.exceptions.HttpException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.LoginRequestDto;
@@ -18,12 +20,11 @@ public class UserService {
     public LoginResponseDto login(LoginRequestDto request) throws Exception {
         // Find the user by email (username)
         User user = this.userJpaRepository.findByUsername(request.getUsername())
-                .orElseThrow(
-                        () -> new Exception("User not found with username: " + request.getUsername()));
+                .orElseThrow(() -> new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED));
 
         // Verify password
         if (!request.getPassword().equals(user.getPassword())) {
-            throw new Exception("Invalid username or password");
+            throw new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED);
         }
 
         // Generate a new access token (with full data + roles)

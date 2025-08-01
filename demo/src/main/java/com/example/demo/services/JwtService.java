@@ -2,10 +2,8 @@ package com.example.demo.services;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
@@ -44,20 +42,32 @@ public class JwtService {
 
     public String generateAccessToken(User user) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("id", user.getId());
+        claims.put("type", "access_token"); // Token type identifier
 
         // Add user roles to access token
-        List<Map<String, Object>> roles = user.getRoles().stream()
-                .map(role -> {
-                    Map<String, Object> roleMap = new HashMap<>();
-                    roleMap.put("id", role.getId());
-                    roleMap.put("name", role.getName());
-                    return roleMap;
-                })
-                .collect(Collectors.toList());
+        /*
+         * Trường hợp KHÔNG nên đưa roles vào JWT:
+         * Bảo mật cao: Roles có thể thay đổi thường xuyên, nếu để trong JWT thì phải
+         * chờ token hết hạn mới cập nhật được.
+         * Roles phức tạp: Nếu roles có nhiều thông tin chi tiết, JWT sẽ trở nên lớn.
+         * Quản lý tập trung: Muốn kiểm soát quyền truy cập real-time từ database.
+         * Trường hợp NÊN đưa roles vào JWT:
+         * Performance: Tránh query database mỗi request để lấy roles.
+         * Stateless: Hoàn toàn không phụ thuộc vào database cho việc xác thực.
+         * Microservices: Các service khác có thể đọc roles từ JWT mà không cần gọi user
+         * service.
+         */
+        // List<Map<String, Object>> roles = user.getRoles().stream()
+        // .map(role -> {
+        // Map<String, Object> roleMap = new HashMap<>();
+        // roleMap.put("id", role.getId());
+        // roleMap.put("name", role.getName());
+        // return roleMap;
+        // })
+        // .collect(Collectors.toList());
 
-        claims.put("id", user.getId());
-        claims.put("roles", roles);
-        claims.put("type", "access_token"); // Token type identifier
+        // claims.put("roles", roles);
 
         long jwtExpiration = 86400000;
         return createToken(claims, user.getUsername(), jwtExpiration);
