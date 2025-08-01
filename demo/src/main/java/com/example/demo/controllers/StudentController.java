@@ -32,7 +32,8 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
+    // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
+    // @PreAuthorize("hasAnyRole('Administrators', 'Managers')")
     @GetMapping()
     public List<StudentResponseDto> getAllStudents() {
         return this.studentService.getAllStudents();

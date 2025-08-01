@@ -31,6 +31,7 @@ public class UserService {
         String accessToken = jwtService.generateAccessToken(user);
 
         return LoginResponseDto.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .accessToken(accessToken)
                 .build();

@@ -9,5 +9,6 @@ import lombok.Setter;
 @Builder
 public class LoginResponseDto {
     String username;
+    Long id;
     String accessToken;
 }
