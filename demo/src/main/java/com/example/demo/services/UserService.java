@@ -1,12 +1,12 @@
 package com.example.demo.services;
 
-import com.example.demo.exceptions.HttpException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dtos.LoginRequestDto;
 import com.example.demo.dtos.LoginResponseDto;
 import com.example.demo.entities.User;
+import com.example.demo.exceptions.HttpException;
 import com.example.demo.repositories.UserJpaRepository;
 
 import lombok.RequiredArgsConstructor;
