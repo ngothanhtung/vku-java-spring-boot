@@ -13,17 +13,21 @@ import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
 @Repository
 public interface UserJpaRepository extends JpaRepository<User, String>, UserRepository {
     @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.userRoles ur LEFT JOIN FETCH ur.role r")
+    @Override
     List<User> findAllUsersWithRoles();
 
     @Query("SELECT u FROM User u JOIN FETCH u.userRoles ur JOIN FETCH ur.role WHERE u.id = :userId")
     User findByIdWithRoles(String userId);
 
     // Check if email already exists
+    @Override
     boolean existsByEmail(String email);
 
     // Find the user by email
+    @Override
     Optional<User> findByEmail(String email);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userRoles ur LEFT JOIN FETCH ur.role WHERE u.email = :email")
+    @Override
     Optional<User> findByEmailWithRoles(String email);
 }

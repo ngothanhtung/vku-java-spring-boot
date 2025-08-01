@@ -4,18 +4,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
 import vku.apiservice.tutorials.domain.security.dtos.CreateUserRequestDto;
 import vku.apiservice.tutorials.domain.security.dtos.RoleResponseDto;
 import vku.apiservice.tutorials.domain.security.dtos.UserResponseDto;
 import vku.apiservice.tutorials.domain.security.entities.User;
-
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
-
 import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 
 @Service
@@ -40,7 +36,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-//    @Cacheable(value = "users", key = "'all'")
+    // @Cacheable(value = "users", key = "'all'")
     public List<UserResponseDto> getUsers() {
         List<User> users = userRepository.findAllUsersWithRoles();
 

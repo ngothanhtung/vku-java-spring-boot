@@ -4,6 +4,6 @@ import lombok.Value;
 
 @Value
 public class RoleUnassignedEvent {
-	private final String userId;
-	private final String roleId;
+    private final String userId;
+    private final String roleId;
 }
