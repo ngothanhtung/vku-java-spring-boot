@@ -1,10 +1,5 @@
 package vku.apiservice.tutorials.presentation.exceptions;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -13,6 +8,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", 403);
         errorResponse.put("error", "Forbidden");
-        errorResponse.put("messages", List.of("Access denied: You don't have permission to access this resource"));
+        errorResponse.put("messages", List.of("You don't have permission to access this resource: " + ex.getMessage()));
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
@@ -64,7 +64,3 @@ public class GlobalExceptionHandler {
     }
 }
 
-// README
-// This class handles global exceptions for the application.
-// It intercepts exceptions thrown by controllers
-// and provides a consistent error and response format.

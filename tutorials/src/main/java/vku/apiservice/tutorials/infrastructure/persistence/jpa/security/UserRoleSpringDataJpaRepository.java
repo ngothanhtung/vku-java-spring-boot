@@ -7,4 +7,5 @@ import vku.apiservice.tutorials.domain.security.entities.UserRoleId;
 
 public interface UserRoleSpringDataJpaRepository extends JpaRepository<UserRole, UserRoleId> {
 
+
 }
