@@ -15,7 +15,7 @@ FROM amazoncorretto:21.0.8
 WORKDIR /app
 # Copy file jar đã build từ stage build sang stage chạy, đổi tên thành app.jar.
 COPY --from=build /app/build/libs/*.jar app.jar
-# Mở port 8888 để ứng dụng lắng nghe (thường là port của Spring Boot).
-EXPOSE 8888
+# Mở port 8080 để ứng dụng lắng nghe (thường là port của Spring Boot).
+EXPOSE 8080
 # Thiết lập lệnh khởi chạy ứng dụng khi container start.
 ENTRYPOINT ["java","-jar","app.jar"]

@@ -19,33 +19,33 @@ You will be prompted to enter your Docker Hub username and password.
 To build the Docker image, navigate to the directory containing the `Dockerfile` and run the following command:
 
 ```bash
-docker build -t thanhtungo/vku-java-spring-boot:latest -f docker/Dockerfile .
+docker build -t thanhtungo/vku-java-spring-boot-demo:latest .
 ```
 
 ## Push the Docker Image to Docker Hub
 After building the Docker image, you can push it to Docker Hub using the following command:
 
 ```bash  
-docker push thanhtungo/vku-java-spring-boot:latest
+docker push thanhtungo/vku-java-spring-boot-demo:latest
 
 ```
 
 ## Pull the Docker Image from Docker Hub
 If you want to pull the Docker image from Docker Hub, you can use the following command:
 ```bash
-docker pull thanhtungo/vku-java-spring-boot:latest
+docker pull thanhtungo/vku-java-spring-boot-demo:latest
 ```
 
 ## Run with Docker Compose
 To run the VKU Java Spring Boot application using Docker Compose, you can use the following command. Make sure you have Docker Compose installed and the `docker-compose.yml` file is correctly configured.
 
 ```bash
-docker compose -p vku-java-spring-boot -f docker/docker-compose.yml up
+docker compose -p vku-java-spring-boot-demo up
 ```
 ## Stop and Remove Containers
 To stop and remove the containers created by Docker Compose, use the following command:
 ```bash
-docker compose -p vku-java-spring-boot -f docker/docker-compose.yml down
+docker compose -p vku-java-spring-boot-demo down
 ```
 
 ## Stop and Remove Containers with Volumes
