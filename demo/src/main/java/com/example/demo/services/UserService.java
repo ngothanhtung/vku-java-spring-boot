@@ -115,25 +115,21 @@ public class UserService {
         // Find the user by email
         // If not found, create a new user with the email.
         Optional<User> user = this.userJpaRepository.findByEmail(email);
+
         // Create new user if not found
-        User newUser = new User();
-        String accessToken;
-        if (user.isEmpty()) {
-
-            newUser.setUsername(email);
-            newUser.setPassword(""); // Password not used for Google login
-
+        User newUser = user.orElseGet(() -> {
+            User u = new User();
+            u.setUsername(email);
+            u.setPassword("");
             Role role = new Role();
             role.setId(3L);
-            newUser.setRoles(List.of(role)); // Assuming role ID 3 for Google users
-            // Save the new user
-            this.userJpaRepository.save(newUser);
-        } else {
-            newUser = user.get();
-        }
+            u.setRoles(List.of(role));
+            return userJpaRepository.save(u);
+        });
+
 
         // Generate a new access token (with full data + roles)
-        accessToken = jwtService.generateAccessToken(newUser);
+        String accessToken = jwtService.generateAccessToken(newUser);
 
         return LoginResponseDto.builder()
                 .id(newUser.getId())
