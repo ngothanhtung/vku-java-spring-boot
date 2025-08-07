@@ -7,7 +7,7 @@ on:
     # branches:
     #   - main
     # paths:
-    #   - 'react-ts-app/**'
+    #   - 'demo/**'
     tags:
       # Chỉ chạy khi tạo tag bắt đầu bằng 'deployment'
       # Ví dụ: deployment-v1.0.0, deployment-prod, deployment-staging
