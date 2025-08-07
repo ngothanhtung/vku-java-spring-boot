@@ -42,6 +42,7 @@ public class UserService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .accessToken(accessToken)
+                .ok(true)
                 .build();
     }
 

@@ -11,4 +11,5 @@ public class LoginResponseDto {
     String username;
     Long id;
     String accessToken;
+    boolean ok;
 }
