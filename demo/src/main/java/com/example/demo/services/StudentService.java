@@ -1,29 +1,25 @@
 package com.example.demo.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.example.demo.dtos.*;
+import com.example.demo.entities.Student;
+import com.example.demo.enums.StudentStatus;
+import com.example.demo.repositories.StudentJpaRepository;
+import com.example.demo.repositories.StudentProjection;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.CourseResponseDto;
-import com.example.demo.dtos.CreateStudentRequestDto;
-import com.example.demo.dtos.DepartmentResponseDto;
-import com.example.demo.dtos.PaginatedStudentResponseDto;
-import com.example.demo.dtos.StudentResponseDto;
-import com.example.demo.dtos.UpdateStudentRequestDto;
-import com.example.demo.entities.Student;
-import com.example.demo.enums.StudentStatus;
-import com.example.demo.repositories.StudentJpaRepository;
-import com.example.demo.repositories.StudentProjection;
-
-import jakarta.persistence.EntityGraph;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -63,6 +59,7 @@ public class StudentService {
         return studentDto;
     }
 
+    @Cacheable(value = "students", key = "'all'")
     @Transactional(readOnly = true)
     public List<StudentResponseDto> getAllStudents() {
         List<Student> students = this.studentJpaRepository.getAllStudents();
@@ -74,6 +71,7 @@ public class StudentService {
     }
 
     // Phương thức mới với phân trang
+    @Cacheable(value = "students", key = "'paginated-' + #page + '-' + #size")
     public PaginatedStudentResponseDto getAllStudentsPaginated(int page, int size) {
         // Tạo Pageable object với page và size
         Pageable pageable = PageRequest.of(page, size);
@@ -98,11 +96,13 @@ public class StudentService {
                 .build();
     }
 
+    @Cacheable(value = "students", key = "#id")
     public StudentResponseDto getStudentById(Long id) {
         Student student = this.studentJpaRepository.findById(id).orElseThrow();
         return convertToDto(student);
     }
 
+    @CacheEvict(value = "students", allEntries = true)
     public StudentResponseDto createStudent(CreateStudentRequestDto createStudentRequestDto) {
 
         Student student = new Student();
@@ -115,6 +115,8 @@ public class StudentService {
         return convertToDto(createdStudent);
     }
 
+    @CachePut(value = "students", key = "#id")
+    @CacheEvict(value = "students", key = "'all'")
     public StudentResponseDto updateStudent(Long id, UpdateStudentRequestDto student) {
         Student existingStudent = this.studentJpaRepository.findById(id).orElseThrow();
         existingStudent.setName(student.getName());
@@ -123,12 +125,14 @@ public class StudentService {
         return convertToDto(updatedStudent);
     }
 
+    @CacheEvict(value = "students", allEntries = true)
     public void deleteStudent(Long id) {
         this.studentJpaRepository.findById(id).orElseThrow();
         this.studentJpaRepository.deleteById(id);
     }
 
     // JPA Specifications for Dynamic Queries
+    @Cacheable(value = "students", key = "'name-' + #name")
     public List<Student> findByName(String name) {
         return this.studentJpaRepository.findAll(StudentSpecifications.hasName(name));
     }
@@ -168,6 +172,7 @@ public class StudentService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "students", key = "'status-' + #status")
     public List<StudentResponseDto> findByStatus(StudentStatus status) {
 
         List<Student> students = this.studentJpaRepository.findByStatus(status);
@@ -178,6 +183,7 @@ public class StudentService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "students", key = "'department-' + #departmentId")
     public List<StudentResponseDto> findByDepartmentId(Long departmentId) {
         // Using EntityManager to fetch students by department ID
         EntityGraph<?> graph = em.createEntityGraph(Student.class);
