@@ -1,32 +1,28 @@
 package com.example.demo.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.example.demo.dtos.*;
+import com.example.demo.entities.Student;
+import com.example.demo.enums.StudentStatus;
+import com.example.demo.events.StudentDeletedEvent;
+import com.example.demo.events.StudentUpdatedEvent;
+import com.example.demo.repositories.StudentJpaRepository;
+import com.example.demo.repositories.StudentProjection;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.hibernate.Session;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.dtos.CourseResponseDto;
-import com.example.demo.dtos.CreateStudentRequestDto;
-import com.example.demo.dtos.DepartmentResponseDto;
-import com.example.demo.dtos.PaginatedStudentResponseDto;
-import com.example.demo.dtos.StudentResponseDto;
-import com.example.demo.dtos.UpdateStudentRequestDto;
-import com.example.demo.entities.Student;
-import com.example.demo.enums.StudentStatus;
-import com.example.demo.repositories.StudentJpaRepository;
-import com.example.demo.repositories.StudentProjection;
-
-import jakarta.persistence.EntityGraph;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -34,8 +30,12 @@ public class StudentService {
     private EntityManager em;
     private final StudentJpaRepository studentJpaRepository;
 
-    public StudentService(StudentJpaRepository studentJpaRepository) {
+
+    private final ApplicationEventPublisher eventPublisher;
+
+    public StudentService(StudentJpaRepository studentJpaRepository, ApplicationEventPublisher eventPublisher) {
         this.studentJpaRepository = studentJpaRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     // create method convert entity to dto
@@ -132,6 +132,10 @@ public class StudentService {
         existingStudent.setName(student.getName());
         existingStudent.setAddress(student.getAddress());
         Student updatedStudent = this.studentJpaRepository.save(existingStudent);
+
+        // Phát sự kiện StudentUpdatedEvent
+        eventPublisher.publishEvent(new StudentUpdatedEvent(updatedStudent.getId(), updatedStudent));
+
         return convertToDto(updatedStudent);
     }
 
@@ -139,6 +143,8 @@ public class StudentService {
     public void deleteStudent(Long id) {
         this.studentJpaRepository.findById(id).orElseThrow();
         this.studentJpaRepository.deleteById(id);
+        // Phát sự kiện StudentDeletedEvent
+        eventPublisher.publishEvent(new StudentDeletedEvent(id));
     }
 
     // JPA Specifications for Dynamic Queries

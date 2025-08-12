@@ -10,7 +10,7 @@ public class BackgroundService {
         System.out.println("Executing task in thread: " + Thread.currentThread().getName());
         // Simulate a time-consuming task
         try {
-            Thread.sleep(5000);  // Simulate delay
+            Thread.sleep(5000); // Simulate delay
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
