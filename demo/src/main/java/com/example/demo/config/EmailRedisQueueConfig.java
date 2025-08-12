@@ -19,31 +19,31 @@ import com.example.demo.models.EmailMessage;
 @EnableScheduling
 public class EmailRedisQueueConfig {
 
-  @Bean("emailRedisTemplate")
-  public RedisTemplate<String, EmailMessage> emailRedisTemplate(RedisConnectionFactory connectionFactory) {
-    RedisTemplate<String, EmailMessage> template = new RedisTemplate<>();
-    template.setConnectionFactory(connectionFactory);
+	@Bean("emailRedisTemplate")
+	public RedisTemplate<String, EmailMessage> emailRedisTemplate(RedisConnectionFactory connectionFactory) {
+		RedisTemplate<String, EmailMessage> template = new RedisTemplate<>();
+		template.setConnectionFactory(connectionFactory);
 
-    // Sử dụng StringRedisSerializer cho key
-    template.setKeySerializer(new StringRedisSerializer());
-    template.setHashKeySerializer(new StringRedisSerializer());
+		// Sử dụng StringRedisSerializer cho key
+		template.setKeySerializer(new StringRedisSerializer());
+		template.setHashKeySerializer(new StringRedisSerializer());
 
-    // Sử dụng Jackson serializer cho value
-    template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-    template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+		// Sử dụng Jackson serializer cho value
+		template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+		template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
 
-    template.afterPropertiesSet();
-    return template;
-  }
+		template.afterPropertiesSet();
+		return template;
+	}
 
-  @Bean("emailRedisTaskExecutor")
-  public Executor emailRedisTaskExecutor() {
-    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize(2);
-    executor.setMaxPoolSize(5);
-    executor.setQueueCapacity(100);
-    executor.setThreadNamePrefix("email-redis-sender-");
-    executor.initialize();
-    return executor;
-  }
+	@Bean("emailRedisTaskExecutor")
+	public Executor emailRedisTaskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(2);
+		executor.setMaxPoolSize(5);
+		executor.setQueueCapacity(100);
+		executor.setThreadNamePrefix("email-redis-sender-");
+		executor.initialize();
+		return executor;
+	}
 }
