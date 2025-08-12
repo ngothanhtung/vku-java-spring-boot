@@ -1,6 +1,6 @@
 # docker-compose.yml
 # This file is used to define and run multi-container Docker applications.
-# It sets up a Spring Boot application with a MySQL database.
+# It sets up a Spring Boot application with a MySQL database and Redis.
 services:
   app:
     image: thanhtungo/vku-java-spring-boot-demo:latest
@@ -10,8 +10,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://server.aptech.io:3307/spring
       SPRING_DATASOURCE_USERNAME: developer
       SPRING_DATASOURCE_PASSWORD: developer_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
   db:
     image: mysql:latest
@@ -32,5 +36,19 @@ services:
       retries: 10
       interval: 10s
       start_period: 30s
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      timeout: 10s
+      retries: 5
+      interval: 5s
+      start_period: 10s
 volumes:
   db_data:
+  redis_data:
