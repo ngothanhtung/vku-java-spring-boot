@@ -1,13 +1,8 @@
 package com.example.demo.services;
 
-import com.example.demo.dtos.*;
-import com.example.demo.entities.Student;
-import com.example.demo.enums.StudentStatus;
-import com.example.demo.repositories.StudentJpaRepository;
-import com.example.demo.repositories.StudentProjection;
-import jakarta.persistence.EntityGraph;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hibernate.Session;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -18,8 +13,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.example.demo.dtos.CourseResponseDto;
+import com.example.demo.dtos.CreateStudentRequestDto;
+import com.example.demo.dtos.DepartmentResponseDto;
+import com.example.demo.dtos.PaginatedStudentResponseDto;
+import com.example.demo.dtos.StudentResponseDto;
+import com.example.demo.dtos.UpdateStudentRequestDto;
+import com.example.demo.entities.Student;
+import com.example.demo.enums.StudentStatus;
+import com.example.demo.repositories.StudentJpaRepository;
+import com.example.demo.repositories.StudentProjection;
+
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 public class StudentService {
@@ -62,6 +69,9 @@ public class StudentService {
     @Cacheable(value = "students", key = "'all'")
     @Transactional(readOnly = true)
     public List<StudentResponseDto> getAllStudents() {
+
+        System.out.println("🔥 Fetching all students from the database...");
+
         List<Student> students = this.studentJpaRepository.getAllStudents();
 
         // Convert to DTOs
