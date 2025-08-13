@@ -3,6 +3,7 @@ package com.example.demo.services;
 import com.example.demo.dtos.*;
 import com.example.demo.entities.Student;
 import com.example.demo.enums.StudentStatus;
+import com.example.demo.events.StudentCreatedEvent;
 import com.example.demo.events.StudentDeletedEvent;
 import com.example.demo.events.StudentUpdatedEvent;
 import com.example.demo.repositories.StudentJpaRepository;
@@ -122,6 +123,9 @@ public class StudentService {
         student.setPassword(createStudentRequestDto.getPassword());
 
         Student createdStudent = this.studentJpaRepository.save(student);
+
+        // Phát sự kiện StudentCreatedEvent
+        eventPublisher.publishEvent(new StudentCreatedEvent(createdStudent.getId(), createdStudent));
         return convertToDto(createdStudent);
     }
 

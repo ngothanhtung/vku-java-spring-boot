@@ -55,9 +55,9 @@ public class EmailRedisQueueService {
     }
 
     /**
-     * Xử lý email queue - chạy mỗi 60 giây
+     * Xử lý email queue - chạy mỗi 10 giây
      */
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 10000)
     public void processEmailQueue() {
         processNextEmail();
     }

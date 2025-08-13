@@ -22,4 +22,13 @@ public class StudentEventListener {
         System.out.printf("🔥 Student with ID %d has been deleted", event.getStudentId());
         // Here you can add additional logic, such as sending notifications,
     }
+
+    @EventListener
+    public void handleStudentCreatedEvent(StudentCreatedEvent event) {
+        System.out.println("🔥 StudentEventListener handleStudentCreatedEvent");
+        System.out.printf("🔥 Student with ID %d has been created: %s%n",
+                event.getStudentId(),
+                event.getCreatedStudent().getName());
+        // Here you can add additional logic, such as sending notifications,
+    }
 }
