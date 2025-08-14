@@ -1,5 +1,16 @@
 package com.example.demo.services;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.client.RestTemplate;
+
 import com.example.demo.dtos.GoogleLoginRequestDto;
 import com.example.demo.dtos.GoogleLoginWithCredentialRequestDto;
 import com.example.demo.dtos.LoginRequestDto;
@@ -8,24 +19,32 @@ import com.example.demo.entities.Role;
 import com.example.demo.entities.User;
 import com.example.demo.exceptions.HttpException;
 import com.example.demo.repositories.UserJpaRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
+@Validated
 @Service
 public class UserService {
     private final JwtService jwtService;
     private final UserJpaRepository userJpaRepository;
     private final RestTemplate restTemplate;
 
-    public LoginResponseDto login(LoginRequestDto request) {
+    private Set<ConstraintViolation<LoginRequestDto>> validateUserDto(LoginRequestDto request) {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        return validator.validate(request);
+    }
+
+    public LoginResponseDto login(@Valid LoginRequestDto request) {
+
+        this.validateUserDto(request).forEach(violation -> {
+            throw new HttpException(violation.getMessage(), HttpStatus.BAD_REQUEST);
+        });
+
         // Find the user by email (username)
         User user = this.userJpaRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new HttpException("Invalid username or password", HttpStatus.UNAUTHORIZED));
@@ -94,12 +113,13 @@ public class UserService {
             throw new HttpException("Email not found in token", HttpStatus.UNAUTHORIZED);
         }
 
-
-        // Nên kiểm tra aud = Client ID của ứng dụng để đảm bảo token hợp lệ ( // Có thể code sau ...)
-//        String aud = payload.get("aud").toString();
-//        if (!aud.equals("YOUR_CLIENT_ID")) {
-//            throw new HttpException("Invalid Google token audience", HttpStatus.UNAUTHORIZED);
-//        }
+        // Nên kiểm tra aud = Client ID của ứng dụng để đảm bảo token hợp lệ ( // Có thể
+        // code sau ...)
+        // String aud = payload.get("aud").toString();
+        // if (!aud.equals("YOUR_CLIENT_ID")) {
+        // throw new HttpException("Invalid Google token audience",
+        // HttpStatus.UNAUTHORIZED);
+        // }
 
         // Kiểm tra thêm: exp so với thời gian hiện tại để đảm bảo token chưa hết hạn.
         String iss = payload.get("iss").toString();
@@ -127,7 +147,6 @@ public class UserService {
             u.setRoles(List.of(role));
             return userJpaRepository.save(u);
         });
-
 
         // Generate a new access token (with full data + roles)
         String accessToken = jwtService.generateAccessToken(newUser);
