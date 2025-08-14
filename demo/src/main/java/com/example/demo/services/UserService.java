@@ -3,7 +3,6 @@ package com.example.demo.services;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +19,7 @@ import com.example.demo.entities.User;
 import com.example.demo.exceptions.HttpException;
 import com.example.demo.repositories.UserJpaRepository;
 
-import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -34,16 +30,23 @@ public class UserService {
     private final UserJpaRepository userJpaRepository;
     private final RestTemplate restTemplate;
 
-    private Set<ConstraintViolation<LoginRequestDto>> validateUserDto(LoginRequestDto request) {
-        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        return validator.validate(request);
-    }
+    // private Set<ConstraintViolation<LoginRequestDto>>
+    // validateUserDto(LoginRequestDto request) {
+    // Validator validator =
+    // Validation.buildDefaultValidatorFactory().getValidator();
+    // return validator.validate(request);
+    // }
 
     public LoginResponseDto login(@Valid LoginRequestDto request) {
 
-        this.validateUserDto(request).forEach(violation -> {
-            throw new HttpException(violation.getMessage(), HttpStatus.BAD_REQUEST);
-        });
+        // Manual validation without @Valid annotation and @Validated annotation
+
+        // Set<ConstraintViolation<LoginRequestDto>> violations =
+        // this.validateUserDto(request);
+        // if (!violations.isEmpty()) {
+        // String errorMessage = violations.iterator().next().getMessage();
+        // throw new HttpException(errorMessage, HttpStatus.BAD_REQUEST);
+        // }
 
         // Find the user by email (username)
         User user = this.userJpaRepository.findByUsername(request.getUsername())
