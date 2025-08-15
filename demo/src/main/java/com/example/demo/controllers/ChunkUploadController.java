@@ -431,6 +431,10 @@ public class ChunkUploadController {
             }
             Files.deleteIfExists(dir);
 
+            // Save upload info to database
+            // code here ...
+
+            // return to client
             Map<String, Object> resp = new HashMap<>();
             resp.put("file", request.getFilename());
             resp.put("path", finalPath.toString());
