@@ -1,16 +1,14 @@
 package com.example.demo.services;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
 import com.example.demo.dtos.LoginRequestDto;
 import com.example.demo.dtos.LoginResponseDto;
 import com.example.demo.entities.User;
 import com.example.demo.exceptions.HttpException;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
@@ -20,9 +18,10 @@ public class SqlInjectionService {
 
     public LoginResponseDto login(LoginRequestDto request) {
         try {
-
-            // For SqlInjection demo.
-            // This is a vulnerable code that allows SQL Injection.
+            /*
+             For SqlInjection demo.
+             This is a vulnerable code that allows SQL Injection.
+            */
             String query = "SELECT * FROM users WHERE username = '" + request.getUsername() + "' AND password = '"
                     + request.getPassword() + "'";
 
