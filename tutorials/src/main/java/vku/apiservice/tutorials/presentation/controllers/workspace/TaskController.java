@@ -1,5 +1,8 @@
 package vku.apiservice.tutorials.presentation.controllers.workspace;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,70 +16,65 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import vku.apiservice.tutorials.application.dtos.workspace.CreateTaskRequestDto;
+import vku.apiservice.tutorials.application.dtos.workspace.TaskResponseDto;
+import vku.apiservice.tutorials.application.dtos.workspace.UpdateTaskRequestDto;
+import vku.apiservice.tutorials.application.services.workspace.TaskApplicationService;
 import vku.apiservice.tutorials.infrastructure.config.PreAuthorizeUtil;
-import vku.apiservice.tutorials.domain.workspace.dtos.CreateTaskRequestDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.TaskResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.UpdateTaskRequestDto;
-import vku.apiservice.tutorials.domain.workspace.entities.Task;
-import vku.apiservice.tutorials.domain.workspace.services.TaskService;
 
 @RestController
 @RequestMapping("/api/workspace/tasks")
-@PreAuthorize(PreAuthorizeUtil.ALL_AUTHENTICATED)
 public class TaskController {
-    private final TaskService taskService;
+    private final TaskApplicationService taskApplicationService;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
+    public TaskController(TaskApplicationService taskApplicationService) {
+        this.taskApplicationService = taskApplicationService;
     }
 
     @PostMapping
     @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER)
-    public TaskResponseDto createTask(@RequestBody @Valid CreateTaskRequestDto data) {
-        Task task = taskService.create(data);
-        return taskService.convertToDto(task);
+    public ResponseEntity<TaskResponseDto> createTask(@RequestBody @Valid CreateTaskRequestDto data) {
+        TaskResponseDto task = taskApplicationService.createTask(data);
+        return ResponseEntity.status(HttpStatus.CREATED).body(task);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskService.isTaskOwnerById(#id, authentication.name)")
+    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskApplicationService.isTaskOwnerById(#id, authentication.name)")
     public TaskResponseDto updateTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskRequestDto data) {
-        Task task = taskService.updateTask(id, data);
-        return taskService.convertToDto(task);
+        return taskApplicationService.updateTask(id, data);
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskService.isTaskOwnerById(#id, authentication.name)")
+    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskApplicationService.isTaskOwnerById(#id, authentication.name)")
     public TaskResponseDto patchTask(@PathVariable("id") String id, @RequestBody @Valid UpdateTaskRequestDto data) {
-        Task task = taskService.updateTask(id, data);
-        return taskService.convertToDto(task);
+        return taskApplicationService.updateTask(id, data);
     }
 
     @GetMapping()
-    public Iterable<TaskResponseDto> getTasks() {
-        return taskService.getTasks();
+    public List<TaskResponseDto> getTasks() {
+        return taskApplicationService.getTasks();
     }
 
     @GetMapping("/{id}")
     public TaskResponseDto getTaskById(@PathVariable("id") String id) {
-        Task task = taskService.getTaskById(id);
-        return taskService.convertToDto(task);
+        return taskApplicationService.getTaskById(id);
     }
 
     @GetMapping("/assignee/{assigneeId}")
-    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskService.isTaskOwner(#assigneeId, authentication.name)")
-    public Iterable<TaskResponseDto> getTasksByAssignee(@PathVariable("assigneeId") String assigneeId) {
-        return taskService.getTasksByAssignee(assigneeId);
+    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskApplicationService.isTaskOwner(#assigneeId, authentication.name)")
+    public List<TaskResponseDto> getTasksByAssignee(@PathVariable("assigneeId") String assigneeId) {
+        return taskApplicationService.getTasksByAssignee(assigneeId);
     }
 
     @GetMapping("/project/{projectId}")
-    public Iterable<TaskResponseDto> getTasksByProject(@PathVariable("projectId") String projectId) {
-        return taskService.getTasksByProject(projectId);
+    public List<TaskResponseDto> getTasksByProject(@PathVariable("projectId") String projectId) {
+        return taskApplicationService.getTasksByProject(projectId);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskService.isTaskOwnerById(#id, authentication.name)")
+    @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER + " or @taskApplicationService.isTaskOwnerById(#id, authentication.name)")
     public ResponseEntity<String> deleteTask(@PathVariable("id") String id) {
-        taskService.deleteTask(id);
+        taskApplicationService.deleteTask(id);
         return ResponseEntity.ok("Task deleted successfully");
     }
 }

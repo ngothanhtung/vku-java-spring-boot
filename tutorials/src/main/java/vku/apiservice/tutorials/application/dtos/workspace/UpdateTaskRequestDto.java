@@ -1,4 +1,4 @@
-package vku.apiservice.tutorials.domain.workspace.dtos;
+package vku.apiservice.tutorials.application.dtos.workspace;
 
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -9,9 +9,7 @@ import vku.apiservice.tutorials.domain.workspace.validation.ValidTaskPriority;
 import vku.apiservice.tutorials.domain.workspace.validation.ValidTaskStatus;
 
 /**
- * DTO for updating task information.
- * All fields are optional to support partial updates - only non-null fields
- * will be updated.
+ * DTO for updating task information. All fields are optional to support partial updates - only non-null fields will be updated.
  */
 @Data
 @Builder

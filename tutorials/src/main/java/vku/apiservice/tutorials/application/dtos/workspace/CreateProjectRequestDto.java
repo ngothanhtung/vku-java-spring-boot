@@ -1,4 +1,4 @@
-package vku.apiservice.tutorials.domain.workspace.dtos;
+package vku.apiservice.tutorials.application.dtos.workspace;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -5,15 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import vku.apiservice.tutorials.domain.common.exceptions.BadRequestException;
 import vku.apiservice.tutorials.domain.common.exceptions.EntityNotFoundException;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
-import vku.apiservice.tutorials.domain.workspace.dtos.AssigneeResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.CreateTaskRequestDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.ProjectResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.TaskResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.UpdateTaskRequestDto;
 import vku.apiservice.tutorials.domain.workspace.entities.Project;
 import vku.apiservice.tutorials.domain.workspace.entities.Task;
 import vku.apiservice.tutorials.domain.workspace.enums.TaskPriority;
@@ -34,38 +28,40 @@ public class TaskService {
         this.projectRepository = projectRepository;
     }
 
-    public Task create(CreateTaskRequestDto data) {
-        User user = userRepository.findById(data.getAssigneeId()).orElseThrow(
-                () -> new EntityNotFoundException("User not found with id: " + data.getAssigneeId()));
+    public Task createTask(String title, String description, String status, String priority,
+            String assigneeId, String projectId) {
+        // Validate assignee exists
+        User assignee = userRepository.findById(assigneeId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + assigneeId));
 
+        // Create task entity
         Task task = new Task();
-        task.setTitle(data.getTitle());
-        task.setDescription(data.getDescription());
+        task.setTitle(title);
+        task.setDescription(description);
+        task.setAssignee(assignee);
 
-        // Convert String to enum with defaults if null/empty
-        if (data.getStatus() != null && !data.getStatus().trim().isEmpty()) {
-            task.setStatus(TaskStatus.fromString(data.getStatus()));
-        }
-        if (data.getPriority() != null && !data.getPriority().trim().isEmpty()) {
-            task.setPriority(TaskPriority.fromString(data.getPriority()));
+        // Set status with default if null/empty
+        if (status != null && !status.trim().isEmpty()) {
+            task.setStatus(TaskStatus.fromString(status));
         }
 
-        task.setAssignee(user);
+        // Set priority with default if null/empty
+        if (priority != null && !priority.trim().isEmpty()) {
+            task.setPriority(TaskPriority.fromString(priority));
+        }
 
         // Handle optional project assignment
-        if (data.getProjectId() != null && !data.getProjectId().trim().isEmpty()) {
-            Project project = projectRepository.findById(data.getProjectId())
-                    .orElseThrow(
-                            () -> new EntityNotFoundException("Project not found with id: " + data.getProjectId()));
+        if (projectId != null && !projectId.trim().isEmpty()) {
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
             task.setProject(project);
         }
 
-        return this.taskRepository.save(task); // @PrePersist will set defaults if needed
+        return taskRepository.save(task);
     }
 
-    public List<TaskResponseDto> getTasks() {
-        List<Task> tasks = taskRepository.findAll();
-        return this.convertToDtoList(tasks);
+    public List<Task> getAllTasks() {
+        return taskRepository.findAll();
     }
 
     public Task getTaskById(String id) {
@@ -73,203 +69,100 @@ public class TaskService {
                 .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
     }
 
-    // Get by assignee
-    public List<TaskResponseDto> getTasksByAssignee(String assigneeId) {
-        Optional<User> user = userRepository.findById(assigneeId);
-        if (user.isEmpty()) {
-            throw new EntityNotFoundException("User not found with id: " + assigneeId);
-        }
+    public List<Task> getTasksByAssignee(String assigneeId) {
+        // Validate assignee exists
+        userRepository.findById(assigneeId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + assigneeId));
 
-        List<Task> tasks = taskRepository.findAllTasksWithAssignee().stream()
+        return taskRepository.findAllTasksWithAssignee().stream()
                 .filter(task -> task.getAssignee() != null && task.getAssignee().getId().equals(assigneeId))
                 .toList();
-        return this.convertToDtoList(tasks);
     }
 
-    // Get tasks by project
-    public List<TaskResponseDto> getTasksByProject(String projectId) {
-        // Verify project exists
+    public List<Task> getTasksByProject(String projectId) {
+        // Validate project exists
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
 
-        List<Task> tasks = taskRepository.findAll().stream()
+        return taskRepository.findAll().stream()
                 .filter(task -> task.getProject() != null && task.getProject().getId().equals(projectId))
                 .toList();
-        return this.convertToDtoList(tasks);
     }
 
-    // change status
     public Task changeTaskStatus(String id, String status) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
+        Task task = getTaskById(id);
         TaskStatus taskStatus = TaskStatus.fromString(status);
         task.setStatus(taskStatus);
         return taskRepository.save(task);
     }
 
     public Task changeTaskPriority(String id, String priority) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
+        Task task = getTaskById(id);
         TaskPriority taskPriority = TaskPriority.fromString(priority);
         task.setPriority(taskPriority);
         return taskRepository.save(task);
     }
 
-    public TaskResponseDto convertToDto(Task task) {
-        TaskResponseDto dto = new TaskResponseDto();
-        dto.setId(task.getId());
-        dto.setTitle(task.getTitle());
-        dto.setDescription(task.getDescription());
-        dto.setStartDate(task.getStartDate());
-        dto.setDueDate(task.getDueDate());
-        dto.setCompletedDate(task.getCompletedDate());
-        dto.setStatus(task.getStatus());
-        dto.setPriority(task.getPriority());
+    public Task updateTask(String id, String title, String description, String status, String priority,
+            String assigneeId, String projectId) {
+        Task existingTask = getTaskById(id);
 
-        // Convert User to AssigneeResponseDto to exclude audit fields
-        if (task.getAssignee() != null) {
-            User assignee = task.getAssignee();
-            dto.setAssignee(new AssigneeResponseDto(
-                    assignee.getId(),
-                    assignee.getName(),
-                    assignee.getEmail()));
+        // Update fields if provided
+        if (title != null && !title.trim().isEmpty()) {
+            existingTask.setTitle(title.trim());
         }
 
-        // Convert Project to ProjectResponseDto if exists
-        if (task.getProject() != null) {
-            Project project = task.getProject();
-            dto.setProject(new ProjectResponseDto(
-                    project.getId(),
-                    project.getName(),
-                    project.getDescription()));
+        if (description != null) {
+            existingTask.setDescription(description.trim());
         }
 
-        // Map audit fields
-        dto.setCreatedAt(task.getCreatedAt());
-        dto.setUpdatedAt(task.getUpdatedAt());
-        dto.setCreatedBy(task.getCreatedBy());
-        dto.setUpdatedBy(task.getUpdatedBy());
-
-        return dto;
-    }
-
-    public List<TaskResponseDto> convertToDtoList(List<Task> tasks) {
-        return tasks.stream().map(this::convertToDto).toList();
-    }
-
-    public void deleteTask(String id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
-        this.taskRepository.delete(task);
-    }
-
-    public Task updateTask(String id, CreateTaskRequestDto data) {
-        Task existingTask = this.taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
-
-        if (data.getTitle() != null) {
-            existingTask.setTitle(data.getTitle());
+        if (status != null && !status.trim().isEmpty()) {
+            existingTask.setStatus(TaskStatus.fromString(status));
         }
-        if (data.getDescription() != null) {
-            existingTask.setDescription(data.getDescription());
+
+        if (priority != null && !priority.trim().isEmpty()) {
+            existingTask.setPriority(TaskPriority.fromString(priority));
         }
-        if (data.getStatus() != null && !data.getStatus().trim().isEmpty()) {
-            existingTask.setStatus(TaskStatus.fromString(data.getStatus()));
-        }
-        if (data.getPriority() != null && !data.getPriority().trim().isEmpty()) {
-            existingTask.setPriority(TaskPriority.fromString(data.getPriority()));
-        }
-        if (data.getAssigneeId() != null) {
-            User user = userRepository.findById(data.getAssigneeId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + data.getAssigneeId()));
+
+        if (assigneeId != null && !assigneeId.trim().isEmpty()) {
+            User user = userRepository.findById(assigneeId)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + assigneeId));
             existingTask.setAssignee(user);
+        }
+
+        // Handle project assignment/removal
+        if (projectId != null) {
+            if (!projectId.trim().isEmpty()) {
+                Project project = projectRepository.findById(projectId)
+                        .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
+                existingTask.setProject(project);
+            } else {
+                existingTask.setProject(null);
+            }
         }
 
         return taskRepository.save(existingTask);
     }
 
-    /**
-     * Updates a task using UpdateTaskRequestDto with improved validation and error
-     * handling
-     */
-    public Task updateTask(String id, UpdateTaskRequestDto data) {
-        // Validate that at least one field is provided
-        if (!data.hasAnyField()) {
-            throw new BadRequestException("At least one field must be provided for update");
-        }
-
-        Task existingTask = this.taskRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
-
-        // Update the title if provided and valid
-        if (data.hasValidTitle()) {
-            existingTask.setTitle(data.getTitle().trim());
-        }
-
-        // Update description if provided and valid
-        if (data.hasValidDescription()) {
-            existingTask.setDescription(data.getDescription().trim());
-        }
-
-        // Update status if provided and valid
-        if (data.hasValidStatus()) {
-            existingTask.setStatus(TaskStatus.fromString(data.getStatus()));
-        }
-
-        // Update priority if provided and valid
-        if (data.hasValidPriority()) {
-            existingTask.setPriority(TaskPriority.fromString(data.getPriority()));
-        }
-
-        // Update assignee if provided and valid
-        if (data.hasValidAssigneeId()) {
-            User user = userRepository.findById(data.getAssigneeId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + data.getAssigneeId()));
-            existingTask.setAssignee(user);
-        }
-
-        // Update the project if provided
-        if (data.getProjectId() != null) {
-            if (data.hasValidProjectId()) {
-                // Assign to a project
-                Project project = projectRepository.findById(data.getProjectId())
-                        .orElseThrow(
-                                () -> new EntityNotFoundException("Project not found with id: " + data.getProjectId()));
-                existingTask.setProject(project);
-            } else {
-                // Remove from the project (empty string or just spaces)
-                existingTask.setProject(null);
-            }
-        }
-
-        return this.taskRepository.save(existingTask);
+    public void deleteTask(String id) {
+        Task task = getTaskById(id);
+        taskRepository.delete(task);
     }
 
-    /**
-     * Check if the given user is the owner/assignee of tasks by assignee ID
-     * Used for RBAC authorization
-     */
+    // Domain logic: Authorization checks
     public boolean isTaskOwner(String assigneeId, String currentUserEmail) {
         Optional<User> currentUser = userRepository.findByEmail(currentUserEmail);
         return currentUser.map(user -> user.getId().equals(assigneeId)).orElse(false);
-
-        // Check if the current user is the assignee
     }
 
-    /**
-     * Check if the given user is the owner/assignee of a specific task by task ID
-     * Used for RBAC authorization
-     */
     public boolean isTaskOwnerById(String taskId, String currentUserEmail) {
         Optional<User> currentUser = userRepository.findByEmail(currentUserEmail);
         if (currentUser.isEmpty()) {
             return false;
         }
 
-        Optional<Task> task = this.taskRepository.findById(taskId);
+        Optional<Task> task = taskRepository.findById(taskId);
         return task.filter(value -> value.getAssignee() != null &&
                 value.getAssignee().getId().equals(currentUser.get().getId())).isPresent();
-
-        // Check if the current user is the assignee of this task
-    }
+    }    
 }
