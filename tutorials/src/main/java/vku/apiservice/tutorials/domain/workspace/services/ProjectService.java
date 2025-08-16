@@ -1,79 +1,62 @@
 package vku.apiservice.tutorials.domain.workspace.services;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import vku.apiservice.tutorials.domain.workspace.dtos.CreateProjectRequestDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.ProjectWithTasksResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.TaskResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.UpdateProjectRequestDto;
+import vku.apiservice.tutorials.domain.common.exceptions.EntityAlreadyExistsException;
+import vku.apiservice.tutorials.domain.common.exceptions.EntityNotFoundException;
 import vku.apiservice.tutorials.domain.workspace.entities.Project;
 import vku.apiservice.tutorials.domain.workspace.repositories.ProjectRepository;
-import vku.apiservice.tutorials.presentation.exceptions.HttpException;
 
 @Service
 public class ProjectService {
   private final ProjectRepository projectRepository;
-  private final TaskService taskService;
 
-  public ProjectService(ProjectRepository projectRepository, TaskService taskService) {
+  public ProjectService(ProjectRepository projectRepository) {
     this.projectRepository = projectRepository;
-    this.taskService = taskService;
   }
 
-  public Project create(CreateProjectRequestDto data) {
-    // Check if the project name already exists
-    if (projectRepository.existsByName(data.getName())) {
-      throw new HttpException("Project name already exists: " + data.getName(), HttpStatus.CONFLICT);
+  public Project create(String name, String description) {
+    // Domain logic: Check business rule
+    if (projectRepository.existsByName(name)) {
+      throw new EntityAlreadyExistsException("Project name already exists: " + name);
     }
 
+    // Create domain entity
     Project project = new Project();
-    project.setName(data.getName());
-    project.setDescription(data.getDescription());
+    project.setName(name);
+    project.setDescription(description);
 
-    return this.projectRepository.save(project);
+    return projectRepository.save(project);
   }
 
-  public List<ProjectWithTasksResponseDto> getProjects() {
-    List<Project> projects = projectRepository.findAll();
-    return projects.stream().map(this::convertToDto).collect(Collectors.toList());
+  public List<Project> getAllProjects() {
+    return projectRepository.findAll();
   }
 
-  public List<ProjectWithTasksResponseDto> getProjectsWithTasks() {
-    List<Project> projects = projectRepository.findAllProjectsWithTasks();
-    return projects.stream().map(this::convertToDtoWithTasks).collect(Collectors.toList());
+  public List<Project> getAllProjectsWithTasks() {
+    return projectRepository.findAllProjectsWithTasks();
   }
 
   public Project getProjectById(String id) {
     return projectRepository.findById(id)
-        .orElseThrow(() -> new HttpException("Project not found with id: " + id, HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + id));
   }
 
-  public ProjectWithTasksResponseDto getProjectDtoById(String id) {
-    Project project = getProjectById(id);
-    return convertToDto(project);
-  }
-
-  public Project updateProject(String id, UpdateProjectRequestDto data) {
-    if (!data.hasAnyField()) {
-      throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
-    }
-
+  public Project updateProject(String id, String name, String description) {
     Project project = getProjectById(id);
 
-    if (data.hasValidName()) {
-      // Check if the new name already exists (excluding the current project)
-      if (projectRepository.existsByName(data.getName()) && !project.getName().equals(data.getName())) {
-        throw new HttpException("Project name already exists: " + data.getName(), HttpStatus.CONFLICT);
+    // Domain logic: Validate business rules
+    if (name != null && !name.trim().isEmpty()) {
+      if (projectRepository.existsByName(name) && !project.getName().equals(name)) {
+        throw new EntityAlreadyExistsException("Project name already exists: " + name);
       }
-      project.setName(data.getName());
+      project.setName(name);
     }
 
-    if (data.hasValidDescription()) {
-      project.setDescription(data.getDescription());
+    if (description != null) {
+      project.setDescription(description);
     }
 
     return projectRepository.save(project);
@@ -81,36 +64,6 @@ public class ProjectService {
 
   public void deleteProject(String id) {
     Project project = getProjectById(id);
-    // Note: This will set project_id to null for all related tasks due to the nullable foreign key
     projectRepository.delete(project);
-  }
-
-  public ProjectWithTasksResponseDto convertToDto(Project project) {
-    ProjectWithTasksResponseDto dto = new ProjectWithTasksResponseDto();
-    dto.setId(project.getId());
-    dto.setName(project.getName());
-    dto.setDescription(project.getDescription());
-
-    // Map audit fields
-    dto.setCreatedAt(project.getCreatedAt());
-    dto.setUpdatedAt(project.getUpdatedAt());
-    dto.setCreatedBy(project.getCreatedBy());
-    dto.setUpdatedBy(project.getUpdatedBy());
-
-    return dto;
-  }
-
-  public ProjectWithTasksResponseDto convertToDtoWithTasks(Project project) {
-    ProjectWithTasksResponseDto dto = convertToDto(project);
-
-    // Convert tasks to DTOs if they exist
-    if (project.getTasks() != null && !project.getTasks().isEmpty()) {
-      List<TaskResponseDto> taskResponseDto = project.getTasks().stream()
-          .map(taskService::convertToDto)
-          .collect(Collectors.toList());
-      dto.setTasks(taskResponseDto);
-    }
-
-    return dto;
-  }
+  }  
 }

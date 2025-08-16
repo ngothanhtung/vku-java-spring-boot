@@ -1,7 +1,5 @@
 package vku.apiservice.tutorials.presentation.controllers.workspace;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,59 +15,54 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import vku.apiservice.tutorials.application.dtos.workspace.CreateProjectRequestDto;
+import vku.apiservice.tutorials.application.dtos.workspace.UpdateProjectRequestDto;
+import vku.apiservice.tutorials.application.services.workspace.ProjectApplicationService;
 import vku.apiservice.tutorials.infrastructure.config.PreAuthorizeUtil;
-import vku.apiservice.tutorials.domain.workspace.dtos.CreateProjectRequestDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.ProjectWithTasksResponseDto;
-import vku.apiservice.tutorials.domain.workspace.dtos.UpdateProjectRequestDto;
-import vku.apiservice.tutorials.domain.workspace.entities.Project;
-import vku.apiservice.tutorials.domain.workspace.services.ProjectService;
 
 @RestController
 @RequestMapping("/api/workspace/projects")
 @PreAuthorize(PreAuthorizeUtil.ADMIN_OR_MANAGER)
 public class ProjectController {
-  private final ProjectService projectService;
+    private final ProjectApplicationService projectApplicationService;
 
-  public ProjectController(ProjectService projectService) {
-    this.projectService = projectService;
-  }
-
-  @PostMapping
-  public ResponseEntity<ProjectWithTasksResponseDto> createProject(@RequestBody @Valid CreateProjectRequestDto data) {
-    Project project = projectService.create(data);
-    ProjectWithTasksResponseDto projectWithTasksResponseDto = projectService.convertToDto(project);
-    return ResponseEntity.status(HttpStatus.CREATED).body(projectWithTasksResponseDto);
-  }
-
-  @PutMapping("/{id}")
-  public ProjectWithTasksResponseDto updateProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectRequestDto data) {
-    Project project = projectService.updateProject(id, data);
-    return projectService.convertToDto(project);
-  }
-
-  @PatchMapping("/{id}")
-  public ProjectWithTasksResponseDto patchProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectRequestDto data) {
-    Project project = projectService.updateProject(id, data);
-    return projectService.convertToDto(project);
-  }
-
-  @GetMapping
-  public List<ProjectWithTasksResponseDto> getProjects(
-      @RequestParam(value = "includeTasks", defaultValue = "false") boolean includeTasks) {
-    if (includeTasks) {
-      return projectService.getProjectsWithTasks();
+    public ProjectController(ProjectApplicationService projectApplicationService) {
+        this.projectApplicationService = projectApplicationService;
     }
-    return projectService.getProjects();
-  }
 
-  @GetMapping("/{id}")
-  public ProjectWithTasksResponseDto getProjectById(@PathVariable("id") String id) {
-    return projectService.getProjectDtoById(id);
-  }
+    @PostMapping
+    public ResponseEntity<?> createProject(@RequestBody @Valid CreateProjectRequestDto data) {
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<String> deleteProject(@PathVariable("id") String id) {
-    projectService.deleteProject(id);
-    return ResponseEntity.ok("Project deleted successfully");
-  }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(projectApplicationService.createProject(data));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectRequestDto data) {
+        return ResponseEntity.ok(this.projectApplicationService.updateProject(id, data));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchProject(@PathVariable("id") String id, @RequestBody @Valid UpdateProjectRequestDto data) {
+        return ResponseEntity.ok(this.projectApplicationService.updateProject(id, data));
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getProjects(@RequestParam(value = "includeTasks", defaultValue = "false") boolean includeTasks) {
+        if (includeTasks) {
+            return ResponseEntity.ok(projectApplicationService.getProjectsWithTasks());
+        }
+        return ResponseEntity.ok(projectApplicationService.getProjects());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProjectById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(this.projectApplicationService.getProjectById(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProject(@PathVariable("id") String id) {
+        projectApplicationService.deleteProject(id);
+        return ResponseEntity.ok().build();
+    }
 }
