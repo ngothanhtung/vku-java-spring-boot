@@ -3,9 +3,9 @@ package vku.apiservice.tutorials.domain.workspace.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import vku.apiservice.tutorials.domain.common.exceptions.EntityNotFoundException;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
 import vku.apiservice.tutorials.domain.workspace.dtos.AssigneeResponseDto;
@@ -19,7 +19,6 @@ import vku.apiservice.tutorials.domain.workspace.enums.TaskPriority;
 import vku.apiservice.tutorials.domain.workspace.enums.TaskStatus;
 import vku.apiservice.tutorials.domain.workspace.repositories.ProjectRepository;
 import vku.apiservice.tutorials.domain.workspace.repositories.TaskRepository;
-import vku.apiservice.tutorials.domain.security.repositories.UserJpaRepository;
 
 @Service
 public class TaskService {
@@ -55,8 +54,8 @@ public class TaskService {
         // Handle optional project assignment
         if (data.getProjectId() != null && !data.getProjectId().trim().isEmpty()) {
             Project project = projectRepository.findById(data.getProjectId())
-                    .orElseThrow(() -> new HttpException("Project not found with id: " + data.getProjectId(),
-                            HttpStatus.BAD_REQUEST));
+                    .orElseThrow(
+                            () -> new EntityNotFoundException("Project not found with id: " + data.getProjectId()));
             task.setProject(project);
         }
 
@@ -70,14 +69,14 @@ public class TaskService {
 
     public Task getTaskById(String id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
     }
 
     // Get by assignee
     public List<TaskResponseDto> getTasksByAssignee(String assigneeId) {
         Optional<User> user = userRepository.findById(assigneeId);
         if (user.isEmpty()) {
-            throw new HttpException("User not found with id: " + assigneeId, HttpStatus.NOT_FOUND);
+            throw new EntityNotFoundException("User not found with id: " + assigneeId);
         }
 
         List<Task> tasks = taskRepository.findAllTasksWithAssignee().stream()
@@ -90,7 +89,7 @@ public class TaskService {
     public List<TaskResponseDto> getTasksByProject(String projectId) {
         // Verify project exists
         projectRepository.findById(projectId)
-                .orElseThrow(() -> new HttpException("Project not found with id: " + projectId, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
 
         List<Task> tasks = taskRepository.findAll().stream()
                 .filter(task -> task.getProject() != null && task.getProject().getId().equals(projectId))
@@ -101,7 +100,7 @@ public class TaskService {
     // change status
     public Task changeTaskStatus(String id, String status) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
         TaskStatus taskStatus = TaskStatus.fromString(status);
         task.setStatus(taskStatus);
         return taskRepository.save(task);
@@ -109,7 +108,7 @@ public class TaskService {
 
     public Task changeTaskPriority(String id, String priority) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
         TaskPriority taskPriority = TaskPriority.fromString(priority);
         task.setPriority(taskPriority);
         return taskRepository.save(task);
@@ -159,13 +158,13 @@ public class TaskService {
 
     public void deleteTask(String id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
         this.taskRepository.delete(task);
     }
 
     public Task updateTask(String id, CreateTaskRequestDto data) {
         Task existingTask = this.taskRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
 
         if (data.getTitle() != null) {
             existingTask.setTitle(data.getTitle());
@@ -181,8 +180,7 @@ public class TaskService {
         }
         if (data.getAssigneeId() != null) {
             User user = userRepository.findById(data.getAssigneeId())
-                    .orElseThrow(() -> new HttpException("User not found with id: " + data.getAssigneeId(),
-                            HttpStatus.BAD_REQUEST));
+                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + data.getAssigneeId()));
             existingTask.setAssignee(user);
         }
 
@@ -194,13 +192,9 @@ public class TaskService {
      * handling
      */
     public Task updateTask(String id, UpdateTaskRequestDto data) {
-        // Validate that at least one field is provided
-        if (!data.hasAnyField()) {
-            throw new HttpException("At least one field must be provided for update", HttpStatus.BAD_REQUEST);
-        }
 
         Task existingTask = this.taskRepository.findById(id)
-                .orElseThrow(() -> new HttpException("Task not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
 
         // Update the title if provided and valid
         if (data.hasValidTitle()) {
@@ -225,8 +219,7 @@ public class TaskService {
         // Update assignee if provided and valid
         if (data.hasValidAssigneeId()) {
             User user = userRepository.findById(data.getAssigneeId())
-                    .orElseThrow(() -> new HttpException("User not found with id: " + data.getAssigneeId(),
-                            HttpStatus.BAD_REQUEST));
+                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + data.getAssigneeId()));
             existingTask.setAssignee(user);
         }
 
@@ -235,8 +228,8 @@ public class TaskService {
             if (data.hasValidProjectId()) {
                 // Assign to a project
                 Project project = projectRepository.findById(data.getProjectId())
-                        .orElseThrow(() -> new HttpException("Project not found with id: " + data.getProjectId(),
-                                HttpStatus.BAD_REQUEST));
+                        .orElseThrow(
+                                () -> new EntityNotFoundException("Project not found with id: " + data.getProjectId()));
                 existingTask.setProject(project);
             } else {
                 // Remove from the project (empty string or just spaces)
