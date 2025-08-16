@@ -19,8 +19,7 @@ import vku.apiservice.tutorials.domain.workspace.enums.TaskPriority;
 import vku.apiservice.tutorials.domain.workspace.enums.TaskStatus;
 import vku.apiservice.tutorials.domain.workspace.repositories.ProjectRepository;
 import vku.apiservice.tutorials.domain.workspace.repositories.TaskRepository;
-import vku.apiservice.tutorials.infrastructure.persistence.jpa.security.UserJpaRepository;
-import vku.apiservice.tutorials.presentation.exceptions.HttpException;
+import vku.apiservice.tutorials.domain.security.repositories.UserJpaRepository;
 
 @Service
 public class TaskService {
@@ -28,7 +27,7 @@ public class TaskService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
 
-    public TaskService(TaskRepository taskRepository, UserJpaRepository userRepository,
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository,
             ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
@@ -37,7 +36,7 @@ public class TaskService {
 
     public Task create(CreateTaskRequestDto data) {
         User user = userRepository.findById(data.getAssigneeId()).orElseThrow(
-                () -> new HttpException("User not found with id: " + data.getAssigneeId(), HttpStatus.BAD_REQUEST));
+                () -> new EntityNotFoundException("User not found with id: " + data.getAssigneeId()));
 
         Task task = new Task();
         task.setTitle(data.getTitle());
