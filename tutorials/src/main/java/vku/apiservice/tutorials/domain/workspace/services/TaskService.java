@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import vku.apiservice.tutorials.domain.common.exceptions.BadRequestException;
 import vku.apiservice.tutorials.domain.common.exceptions.EntityNotFoundException;
 import vku.apiservice.tutorials.domain.security.entities.User;
 import vku.apiservice.tutorials.domain.security.repositories.UserRepository;
@@ -192,6 +193,10 @@ public class TaskService {
      * handling
      */
     public Task updateTask(String id, UpdateTaskRequestDto data) {
+        // Validate that at least one field is provided
+        if (!data.hasAnyField()) {
+            throw new BadRequestException("At least one field must be provided for update");
+        }
 
         Task existingTask = this.taskRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Task not found with id: " + id));
