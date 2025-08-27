@@ -73,9 +73,6 @@ public class Student {
 	@Convert(converter = StudentStatusConverter.class)
 	private StudentStatus status;
 
-	@Column(length = 20, nullable = true, columnDefinition = "varchar(20) check (status in ('ACTIVE', 'INACTIVE', 'SUSPENDED'))")
-	private String my_status;
-
 	private boolean deleted;
 
 	@ManyToOne(fetch = FetchType.EAGER)
