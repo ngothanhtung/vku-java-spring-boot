@@ -21,20 +21,6 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(HttpException.class)
-    public ResponseEntity<ErrorResponse> handleHttpException(HttpException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(ex.getStatus().value(), List.of(ex.getMessage()),
-                ex.getStatus().getReasonPhrase());
-        return new ResponseEntity<>(errorResponse, ex.getStatus());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                List.of(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
         List<String> errorMessages = new ArrayList<>();
@@ -72,5 +58,26 @@ public class GlobalExceptionHandler {
         errorResponse.put("messages", List.of("Authentication failed: " + ex.getMessage()));
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getStatus().value(), List.of(ex.getMessage()),
+                ex.getStatus().getReasonPhrase());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(HttpException.class)
+    public ResponseEntity<ErrorResponse> handleHttpException(HttpException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getStatus().value(), List.of(ex.getMessage()),
+                ex.getStatus().getReasonPhrase());
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                List.of(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

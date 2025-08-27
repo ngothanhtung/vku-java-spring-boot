@@ -6,6 +6,7 @@ import com.example.demo.enums.StudentStatus;
 import com.example.demo.events.StudentCreatedEvent;
 import com.example.demo.events.StudentDeletedEvent;
 import com.example.demo.events.StudentUpdatedEvent;
+import com.example.demo.exceptions.EntityNotFoundException;
 import com.example.demo.repositories.StudentJpaRepository;
 import com.example.demo.repositories.StudentProjection;
 import jakarta.persistence.EntityGraph;
@@ -145,7 +146,10 @@ public class StudentService {
 
     @CacheEvict(value = "students", allEntries = true)
     public void deleteStudent(Long id) {
-        this.studentJpaRepository.findById(id).orElseThrow();
+//        this.studentJpaRepository.findById(id).orElseThrow(() -> new HttpException("No student present", HttpStatus.GONE));
+
+        this.studentJpaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Student"));
+//        this.studentJpaRepository.findById(id).orElseThrow();
         this.studentJpaRepository.deleteById(id);
         // Phát sự kiện StudentDeletedEvent
         eventPublisher.publishEvent(new StudentDeletedEvent(id));
