@@ -35,38 +35,54 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @NamedEntityGraph(name = "Student.WithDepartmentAndCourses", attributeNodes = {
-        @NamedAttributeNode("courses"),
-        @NamedAttributeNode("department")
+		@NamedAttributeNode("courses"),
+		@NamedAttributeNode("department")
 })
 @NamedEntityGraph(name = "Student.WithCourses", attributeNodes = {
-        @NamedAttributeNode("courses")
+		@NamedAttributeNode("courses")
 })
 @NamedEntityGraph(name = "Student.WithDepartment", attributeNodes = {
-        @NamedAttributeNode("department")
+		@NamedAttributeNode("department")
 })
 @Table(name = "students")
 @FilterDef(name = "softDeleteFilter", parameters = @ParamDef(name = "deleted", type = Boolean.class))
 @Filter(name = "softDeleteFilter", condition = "deleted = :deleted")
 public class Student {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String email;
-    private String address;
-    private String password;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column
-    @Convert(converter = StudentStatusConverter.class)
-    private StudentStatus status;
+	@Column(length = 100, nullable = false)
+	private String name;
 
-    private boolean deleted;
+	@Column(length = 100, nullable = false)
+	private String email;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "department_id")
-    private Department department;
+	@Column(length = 500, nullable = true)
+	private String address;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "student_courses", joinColumns = @JoinColumn(name = "student_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
-    private List<Course> courses;
+	@Column(length = 100, nullable = false)
+	private String password;
+
+	// Check age >= 18
+	@Column(nullable = true, columnDefinition = "int check (age >= 18)")
+	private int age;
+
+	// check status in: ACTIVE, INACTIVE, SUSPENDED
+
+	@Convert(converter = StudentStatusConverter.class)
+	private StudentStatus status;
+
+	@Column(length = 20, nullable = true, columnDefinition = "varchar(20) check (status in ('ACTIVE', 'INACTIVE', 'SUSPENDED'))")
+	private String my_status;
+
+	private boolean deleted;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "department_id")
+	private Department department;
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "student_courses", joinColumns = @JoinColumn(name = "student_id"), inverseJoinColumns = @JoinColumn(name = "course_id"))
+	private List<Course> courses;
 }

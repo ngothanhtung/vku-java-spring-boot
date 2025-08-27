@@ -17,6 +17,14 @@ public class EmployeeService {
         return this.employeeJpaRepository.save(employee);
     }
 
+    // Update an existing employee
+    public Employee updateEmployee(Long id, Employee updatedEmployee) {
+        Employee existingEmployee = this.employeeJpaRepository.findById(id).orElseThrow();
+        existingEmployee.setName(updatedEmployee.getName());
+
+        return this.employeeJpaRepository.save(existingEmployee);
+    }
+
     public Employee getEmployeeById(Long id) {
         return this.employeeJpaRepository.findById(id).orElseThrow();
     }
