@@ -21,6 +21,7 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Data validation error handler
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
         List<String> errorMessages = new ArrayList<>();
@@ -40,6 +41,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    // Access denied error handler
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDeniedException(AccessDeniedException ex) {
         Map<String, Object> errorResponse = new HashMap<>();
@@ -50,6 +52,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
+    // Authentication error handler
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, Object>> handleAuthenticationException(AuthenticationException ex) {
         Map<String, Object> errorResponse = new HashMap<>();
@@ -60,6 +63,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
+    // Custom entity not found exception handler
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getStatus().value(), List.of(ex.getMessage()),
@@ -67,13 +71,25 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 
-    @ExceptionHandler(HttpException.class)
-    public ResponseEntity<ErrorResponse> handleHttpException(HttpException ex) {
+    @ExceptionHandler(EntityDuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleEntityDuplicateException(EntityDuplicateException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getStatus().value(), List.of(ex.getMessage()),
                 ex.getStatus().getReasonPhrase());
         return new ResponseEntity<>(errorResponse, ex.getStatus());
     }
 
+    // Custom HTTP exception handler
+    @ExceptionHandler(HttpException.class)
+    public ResponseEntity<ErrorResponse> handleHttpException(HttpException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                ex.getStatus().value(),
+                List.of(ex.getMessage()),
+                ex.getStatus().getReasonPhrase()
+        );
+        return new ResponseEntity<>(errorResponse, ex.getStatus());
+    }
+
+    // Generic exception handler for uncaught exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),

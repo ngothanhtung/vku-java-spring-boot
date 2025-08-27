@@ -6,6 +6,7 @@ import com.example.demo.enums.StudentStatus;
 import com.example.demo.events.StudentCreatedEvent;
 import com.example.demo.events.StudentDeletedEvent;
 import com.example.demo.events.StudentUpdatedEvent;
+import com.example.demo.exceptions.EntityDuplicateException;
 import com.example.demo.exceptions.EntityNotFoundException;
 import com.example.demo.repositories.StudentJpaRepository;
 import com.example.demo.repositories.StudentProjection;
@@ -110,14 +111,21 @@ public class StudentService {
 
     @Cacheable(value = "students", key = "#id")
     public StudentResponseDto getStudentById(Long id) {
-        Student student = this.studentJpaRepository.findById(id).orElseThrow();
+        Student student = this.studentJpaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Student"));
         return convertToDto(student);
     }
 
     @CacheEvict(value = "students", allEntries = true)
     public StudentResponseDto createStudent(CreateStudentRequestDto createStudentRequestDto) {
 
+        // Check email unique
+        List<Student> founds = this.studentJpaRepository.findByEmail(createStudentRequestDto.getEmail());
+        if (!founds.isEmpty()) {
+            throw new EntityDuplicateException("Student");
+        }
+
         Student student = new Student();
+        student.setAge(18);
         student.setName(createStudentRequestDto.getName());
         student.setEmail(createStudentRequestDto.getEmail());
         student.setAddress(createStudentRequestDto.getAddress());
@@ -146,7 +154,9 @@ public class StudentService {
 
     @CacheEvict(value = "students", allEntries = true)
     public void deleteStudent(Long id) {
-//        this.studentJpaRepository.findById(id).orElseThrow(() -> new HttpException("No student present", HttpStatus.GONE));
+
+//        this.studentJpaRepository.findById(id).orElseThrow(() -> new RuntimeException("Student not found"));
+//        this.studentJpaRepository.findById(id).orElseThrow(() -> new HttpException("Student not found", HttpStatus.NOT_FOUND));
 
         this.studentJpaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Student"));
 //        this.studentJpaRepository.findById(id).orElseThrow();
