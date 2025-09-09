@@ -13,10 +13,10 @@ import lombok.Setter;
 // Dùng cho InheritanceType.TABLE_PER_CLASS hoặc JOINED
 @Entity
 @Table(name = "employees")
-//public class Employee extends User {
-//    private String name;
-//    private String address;
-//}
+// public class Employee extends User {
+// private String name;
+// private String address;
+// }
 
 public class Employee {
     @Id

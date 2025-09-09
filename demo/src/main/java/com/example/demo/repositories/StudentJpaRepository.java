@@ -1,17 +1,12 @@
 package com.example.demo.repositories;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import com.example.demo.entities.Student;
+import com.example.demo.enums.StudentStatus;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.entities.Student;
-import com.example.demo.enums.StudentStatus;
+import java.util.List;
 
 @Repository
 public interface StudentJpaRepository extends JpaRepository<Student, Long>, JpaSpecificationExecutor<Student> {
@@ -21,8 +16,11 @@ public interface StudentJpaRepository extends JpaRepository<Student, Long>, JpaS
     List<Student> getAllStudents();
 
     // Avoid query N + 1 problem by using EntityGraph
-    @EntityGraph(attributePaths = { "department", "courses" })
+    @EntityGraph(attributePaths = {"department", "courses"})
     List<Student> findByStatus(StudentStatus status);
+
+
+    List<Student> findByEmail(String email);
 
     // Avoid query N + 1 problem by using EntityGraph
     @EntityGraph(value = "Student.WithDepartmentAndCourses", type = EntityGraph.EntityGraphType.LOAD)
