@@ -17,6 +17,7 @@ class MockitoExampleServiceTest {
   @Test
   void testAdd() {
     assertEquals(5, service.Add(2, 3));
+    assertEquals(32, service.Add(2, 30));
   }
 
   @Test
