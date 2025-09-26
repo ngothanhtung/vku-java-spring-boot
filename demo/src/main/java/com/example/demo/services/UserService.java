@@ -30,23 +30,7 @@ public class UserService {
     private final UserJpaRepository userJpaRepository;
     private final RestTemplate restTemplate;
 
-    // private Set<ConstraintViolation<LoginRequestDto>>
-    // validateUserDto(LoginRequestDto request) {
-    // Validator validator =
-    // Validation.buildDefaultValidatorFactory().getValidator();
-    // return validator.validate(request);
-    // }
-
     public LoginResponseDto login(@Valid LoginRequestDto request) {
-
-        // Manual validation without @Valid annotation and @Validated annotation
-
-        // Set<ConstraintViolation<LoginRequestDto>> violations =
-        // this.validateUserDto(request);
-        // if (!violations.isEmpty()) {
-        // String errorMessage = violations.iterator().next().getMessage();
-        // throw new HttpException(errorMessage, HttpStatus.BAD_REQUEST);
-        // }
 
         // Find the user by email (username)
         User user = this.userJpaRepository.findByUsername(request.getUsername())

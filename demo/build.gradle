@@ -60,4 +60,16 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+
+    // Configure Mockito agent to prevent dynamic loading warnings
+    def mockitoAgent = configurations.testRuntimeClasspath.find { it.name.contains('mockito-core') }
+    def byteBuddyAgent = configurations.testRuntimeClasspath.find { it.name.contains('byte-buddy-agent') }
+
+    if (byteBuddyAgent) {
+        jvmArgs "-javaagent:${byteBuddyAgent.absolutePath}"
+    }
+
+    // Additional JVM args to suppress warnings
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
+    jvmArgs '-Djdk.instrument.traceUsage=false'
 }
